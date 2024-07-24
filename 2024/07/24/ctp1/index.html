@@ -5,7 +5,7 @@
     <meta name="viewport" content="initial-scale=1.0, width=device-width" />
     <title>
       
-        Hello World | Hexo
+        ctp登录、查询 | Hexo
       
     </title>
     <meta name="description" content="" />
@@ -150,10 +150,10 @@
   <article class="post-content">
     <div class="post-inner">
       <div class="post-content__head">
-        <div class="post-title">Hello World</div>
+        <div class="post-title">ctp登录、查询</div>
         <div class="post-info">
           
-  
+  <a href="/tags/ctp/" class="post-tag">#ctp</a>
 
 
           <span class="post-date">2024-07-24</span>
@@ -166,20 +166,58 @@
             
           </div>
         
-        <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
+        <h1 id="登录"><a href="#登录" class="headerlink" title="登录"></a>登录</h1><p>Spi （如 CThostFtdcTraderSpi），包含有所有的响应和回报函数，用于接收综合交易平台发送或交易所发送 综合交易平台转发的信息。开发者需要继承该接口类，并实现其中相应的虚函数</p>
+<p>Api （如 CThostFtdcTraderApi），包含主动发起请求和订阅的接口函数，开发者直接调用即可</p>
+<p>上面是官方文档中的介绍，我们使用时候就是创建api和spi的实例对象即可。所有动作额执行都是通过api发送请求出去，然后ctp柜台接到请求把处理结果通过spi的回调函数返回给客户端，我们的实现逻辑就是重写这些回调函数</p>
+<h2 id="ctp准备工作"><a href="#ctp准备工作" class="headerlink" title="ctp准备工作"></a><strong>ctp准备工作</strong></h2><p>1、创建api实例</p>
+<p>2、创建spi实例</p>
+<p>3、把spi对象注册进api中</p>
+<p>4、设置前置交易地址，订阅公有流和私有流</p>
+<p>5、初始化函数Init()，调用后,接口才开始发起前置的连接请求</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">traderapi = tdapi.CThostFtdcTraderApi_CreateFtdcTraderApi()</span><br><span class="line">traderspi = CTraderSpi(traderapi)</span><br><span class="line">traderapi.RegisterSpi(traderspi)</span><br><span class="line">traderapi.RegisterFront(login_info[<span class="string">&#x27;Trade Front&#x27;</span>])</span><br><span class="line">traderapi.SubscribePrivateTopic(tdapi.THOST_TERT_QUICK)</span><br><span class="line">traderapi.SubscribePublicTopic(tdapi.THOST_TERT_QUICK)</span><br><span class="line">traderapi.Init()</span><br></pre></td></tr></table></figure>
 
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
+<p>上面是python的程序，其中CTraderSpi自建的类</p>
+<h2 id="ctp登录流程"><a href="#ctp登录流程" class="headerlink" title="ctp登录流程"></a><strong>ctp登录流程</strong></h2><p>1、OnFrontConnected：初始化链接后响应函数，然后这里去执行api.ReqAuthenticate</p>
+<p>2、OnRspAuthenticate：客户端认证回调，在里面再去执行登录动作api.ReqUserLogin</p>
+<p>3、OnRspUserLogin：登录响应，每天第一次需要确认结算单，这里再去执行api.ReqSettlementInfoConfirm</p>
+<p>4、OnRspSettlementInfoConfirm：结算确认响应，这一步其实不需要，到这一步ctp内部的登录流程就走完了</p>
+<h2 id="属性说明"><a href="#属性说明" class="headerlink" title="属性说明"></a><strong>属性说明</strong></h2><p>1、GetTradingDay：这个是api中自带的方法，通过它可以返回当前交易日，对于夜盘晚上会返回下个交易日，如当天是否确认结算单等就可以靠这个来标记</p>
+<p>2、FrontID, SessionID：这两个属性在OnRspUserLogin回报中返回，分别是前置编号和会话编号，其中后者每次重新登录都会不同并且是递增的。许多人撤单会使用 FrontID + SessionID + OrderRef 撤单的方式，不过我个人喜好第二种方式不使用这两个ID而是采用柜台实际编号的方式，具体后面下单环节再细说。我自己目前只是把这两个ID加上前面的交易日组合成本地初始的OrderRef来使用，后续下单时候从OrderRef这个字段读取然后自增1，其他地方没怎么使用</p>
+<p>总体来说ctp登录账户还是比较简单的，可以看到就是一个api函数，然后spi中受到回报进行处理，其实整个ctp的所有操作都是这样一个流程，只要把握好回调函数中各种数据属性及自己本地的落地如何保存就行了</p>
+<h1 id="查询"><a href="#查询" class="headerlink" title="查询"></a>查询</h1><p>ctp中有所谓流控机制，有分为报单流控、查询流控等。报单流控一般不会触发，至少一秒几笔还是可以达到的，但是查询流控就比较恶心</p>
+<p>自从穿透式监管版本以后，API在连接交易前置时，会去查询到前置的查询流控设置（该设置配置在front_se组件）。假设前置配置了2笔&#x2F;秒，那么连接该前置的API每秒只能发起2笔查询请求。</p>
+<p>但是要注意，不管怎么配置，API都内置了在途流控，在途查询流控为1笔。即，当前这笔查询请求发出后，在未收完所有的查询响应前，不能发起下一笔查询请求。</p>
+<p>在过去，查询流控是内置在API里，1笔每秒，在途1笔。</p>
+<p>如果超过交易前置配置的查询流控，则会触发OnRspError，并提示：“CTP：查询未就绪，请稍后重试”</p>
+<p>如果超过API内置的在途流控，则查询请求的返回值为-2，表示未处理请求超过许可数。</p>
+<p>以上是官方文档中的说明，可以看到是没办法支持连续查询的，所以对于偏高频多品种同时交易，成交后去查询持仓这个操作是一定会触发流控的。解决方法可以在返回值非0时候扔到一个队列中，外面专门开一个线程去队列里取值再次查询，或者建立一个while的循环，连续循环比如10次，每次返回失败延迟1秒再去查，查询成功跳出循环结束执行</p>
+<p>个人目前是采用第二种方案，然后在报单成交后查持仓这个动作是直接通过队列专门查询的，以防止查持仓这个动作的延迟影响整个回报函数中接受信息的延迟</p>
+<h2 id="查持仓"><a href="#查持仓" class="headerlink" title="查持仓"></a><strong>查持仓</strong></h2><p>通过查询函数ReqQryInvestorPosition执行后，回调函数OnRspQryInvestorPosition返回持仓信息，ctp的返回是一条记录一条记录的返回的，对于上期的话今仓和老仓是算作两条持仓分别返回</p>
+<p>ReqQryInvestorPosition这个函数的参数结构中如果带上品种合约，则会返回该品种的持仓，如果不设置品种合约，则返回所有持仓合约</p>
+<p>下面重点看下回调函数的返回值</p>
+<p>PositionDate：持仓日期，‘1’表示当前交易日持仓    ‘2’表示是历史仓（只有上期和能源有这个值）</p>
+<p>PosiDirection：是枚举值，’2’表示多头持仓   ‘3’表示空头持仓</p>
+<p>通过这两个属性就能知道当前品种的仓位情况，所以本地构建数据结构名时候就需要根据这两个进行处理。个人使用的方法是把这两个属性相在加上品种代码就得到对应的持仓名称，PositionDate+PosiDirection+InstrumentID</p>
+<p>比如：12:rb2410就可以表示螺纹钢10合约的多头今仓</p>
+<p>除上期所品种: 12表示多头持仓，13表示空头持仓</p>
+<p>上期所品种: 12表示多头今天仓，13表示空头今天仓，22表示多头老仓，23表示空头老仓</p>
+<p>而头寸的具体信息这边保存字典格式如下</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">dict_ = &#123;</span><br><span class="line">        <span class="string">&#x27;总持仓&#x27;</span>: pInvestorPosition.Position,</span><br><span class="line">        <span class="string">&#x27;今持仓&#x27;</span>: pInvestorPosition.TodayPosition,</span><br><span class="line">        <span class="string">&#x27;持仓盈亏&#x27;</span>: pInvestorPosition.PositionProfit,</span><br><span class="line">        <span class="string">&#x27;多头冻结&#x27;</span>: pInvestorPosition.LongFrozen,</span><br><span class="line">        <span class="string">&#x27;空头冻结&#x27;</span>: pInvestorPosition.ShortFrozen,</span><br><span class="line">        <span class="string">&#x27;保证金&#x27;</span>: pInvestorPosition.UseMargin,</span><br><span class="line">        <span class="string">&#x27;持仓成本&#x27;</span>: pInvestorPosition.PositionCost,</span><br><span class="line">        <span class="string">&#x27;开仓成本&#x27;</span>: pInvestorPosition.OpenCost</span><br><span class="line">		&#125;</span><br></pre></td></tr></table></figure>
 
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
+<p>对于上海的品种，老仓下只有Position没有TodayPosition，而今仓下Position和TodayPosition是相等的</p>
+<p>对于非上海品种，Position就是总的持仓，而TodayPosition就表示今仓</p>
+<p>所以我们平仓时候判断持仓直接去读Position就可以了，一般不用理会今仓</p>
+<p>多头冻结和空头冻结：这两是挂单的意思</p>
+<p>对于多头持仓，多头冻结就是开仓未成交，空头冻结是平多未成交</p>
+<p>对于空头持仓，空头冻结是开空未成交，多头冻结是平空未成交</p>
+<p>所以要计算实际可平数量时候需要根据对应关系自己做好减去冻结的逻辑关系，比如判断可用多头就要用Position-ShortFrozen，实际持仓-对应的平仓挂单</p>
+<h2 id="查帐户资金"><a href="#查帐户资金" class="headerlink" title="查帐户资金"></a><strong>查帐户资金</strong></h2><p>通过查询函数ReqQryTradingAccount执行后，回调函数OnRspQryTradingAccount返回账户的资金情况</p>
+<p>账户的字段解释如下</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">dict_ = &#123;</span><br><span class="line">        <span class="string">&#x27;持仓盈亏&#x27;</span>: pTradingAccount.PositionProfit,</span><br><span class="line">        <span class="string">&#x27;平仓盈亏&#x27;</span>: pTradingAccount.CloseProfit,</span><br><span class="line">        <span class="string">&#x27;手续费&#x27;</span>: pTradingAccount.Commission,</span><br><span class="line">        <span class="string">&#x27;保证金总额&#x27;</span>: pTradingAccount.CurrMargin,</span><br><span class="line">        <span class="string">&#x27;可用资金&#x27;</span>: pTradingAccount.Available,</span><br><span class="line">        <span class="string">&#x27;权益&#x27;</span>: pTradingAccount.Balance,</span><br><span class="line">        <span class="string">&#x27;昨权益&#x27;</span>: pTradingAccount.PreBalance</span><br><span class="line">		&#125;</span><br></pre></td></tr></table></figure>
 
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
 
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
 
+<h1 id=""><a href="#" class="headerlink" title=""></a></h1>
       </div>
     </div>
     
@@ -222,30 +260,31 @@
     
     <div class="post-nav">
   
-    <a class="post-nav-item-left" href="/2024/07/24/pandas/">
+    <div class="post-nav-item-left"></div>
+  
+  <div class="vhr"></div>
+  
+    <a class="post-nav-item-right" href="/2024/07/24/pandas/">
       <div class="text-align">
+        <span class="text-small">下一篇</span>
         <svg t="1670570876164"
              class="icon"
              viewBox="0 0 1024 1024"
+             transform="scale(-1,-1)"
              width="16"
              height="16">
           <path d="M384 512L731.733333 202.666667c17.066667-14.933333 19.2-42.666667 4.266667-59.733334-14.933333-17.066667-42.666667-19.2-59.733333-4.266666l-384 341.333333c-10.666667 8.533333-14.933333 19.2-14.933334 32s4.266667 23.466667 14.933334 32l384 341.333333c8.533333 6.4 19.2 10.666667 27.733333 10.666667 12.8 0 23.466667-4.266667 32-14.933333 14.933333-17.066667 14.933333-44.8-4.266667-59.733334L384 512z" p-id="14596" />
         </svg>
-        <span class="text-small">上一篇</span>
       </div>
-      <div>pandas</div>
+      pandas
     </a>
-  
-  <div class="vhr"></div>
-  
-    <div class="post-nav-item-right"></div>
   
 </div>
 
     
       <div class="related-post">
   <div class="related__head">
-  
+  <a href="/tags/ctp/" class="post-tag">#ctp</a>
 
 </div>
   <div class="realated__body">
