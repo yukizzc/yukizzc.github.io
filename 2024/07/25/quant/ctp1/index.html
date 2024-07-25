@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head>
+    <meta charset="utf8" />
+    <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+    <title>
+      
+        ctp登录、查询 | Hexo
+      
+    </title>
+    <meta name="description" content="" />
+    <meta name="keywords" content="" />
+    
+      <link rel="apple-touch-icon"
+            sizes="180x180"
+            href="/images/apple-touch-icon.png" />
+    
+    
+      <link rel="icon"
+            type="image/png"
+            sizes="32x32"
+            href="/images/favicon-32x32.png" />
+    
+    
+      <link rel="icon"
+            type="image/png"
+            sizes="16x16"
+            href="/images/favicon-16x16.png" />
+    
+    
+      <link rel="mask-icon"
+            href="/images/logo.svg"
+            color="" />
+    
+    
+    
+      
+  <style>
+    @font-face {
+        font-family:sourceHanSerif;
+        src: url(/font/normal.ttf);
+        font-weight: normal;
+    }
+  </style>
+
+  <style>
+    @font-face {
+        font-family:sourceHanSerif;
+        src: url(/font/bold.ttf);
+        font-weight: bold;
+    }
+  </style>
+
+
+    
+    <link rel="stylesheet"
+          type="text/css"
+          href='/css/layout.css' />
+    
+    
+  <link rel="stylesheet" type="text/css" href="/css/post.css"/>
+  
+
+  <meta name="generator" content="Hexo 7.3.0"></head>
+  <body>
+    
+      <div id="search-mask" style="display:none">
+  <div class="search-main" id="search-main">
+    <div class="search__head">
+      <div class="search-form">
+        <svg t="1706347533072"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             version="1.1"
+             xmlns="http://www.w3.org/2000/svg"
+             p-id="7828"
+             width="20"
+             height="20">
+          <path d="M685.6 660.336l155.152 155.168a16 16 0 0 1 0 22.624l-11.312 11.328a16 16 0 0 1-22.624 0l-158.528-158.544a289.792 289.792 0 0 1-165.152 51.36C322.336 742.256 192 611.904 192 451.12 192 290.336 322.336 160 483.136 160c160.784 0 291.12 130.336 291.12 291.136 0 82.112-33.984 156.272-88.672 209.2z m-202.464 33.92c134.272 0 243.12-108.848 243.12-243.12C726.256 316.848 617.408 208 483.136 208 348.848 208 240 316.848 240 451.136c0 134.272 108.848 243.12 243.136 243.12z" fill="#000000" p-id="7829">
+          </path>
+        </svg>
+        <input id="search-input" placeholder="搜索文章">
+        <svg t="1706361500528"
+             id="search-clear"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             version="1.1"
+             xmlns="http://www.w3.org/2000/svg"
+             p-id="4351"
+             width="20"
+             height="20">
+          <path d="M512 562.688l-264.2944 264.2944-50.688-50.688L461.312 512 197.0176 247.7056l50.688-50.688L512 461.312l264.2944-264.2944 50.688 50.688L562.688 512l264.2944 264.2944-50.688 50.688L512 562.688z" fill="#00" p-id="4352">
+          </path>
+        </svg>
+      </div>
+    </div>
+    <div class="search__body" id="search-result"></div>
+    <div class="search__foot"></div>
+  </div>
+</div>
+
+    
+    <div class="head">
+      <div class="nav">
+        <a href='/' class="nav-logo">
+          <img alt="logo" height="60px" width="60px" src="/images/logo.svg" />
+        </a>
+        <input id="navBtn" type="checkbox" />
+        <div class="nav-right">
+          
+            <div class="search-outer">
+  <div class="search" id="search-btn">
+    <svg t="1706347533072"
+         class="icon"
+         viewBox="0 0 1024 1024"
+         version="1.1"
+         xmlns="http://www.w3.org/2000/svg"
+         p-id="7828"
+         width="20"
+         height="20">
+      <path d="M685.6 660.336l155.152 155.168a16 16 0 0 1 0 22.624l-11.312 11.328a16 16 0 0 1-22.624 0l-158.528-158.544a289.792 289.792 0 0 1-165.152 51.36C322.336 742.256 192 611.904 192 451.12 192 290.336 322.336 160 483.136 160c160.784 0 291.12 130.336 291.12 291.136 0 82.112-33.984 156.272-88.672 209.2z m-202.464 33.92c134.272 0 243.12-108.848 243.12-243.12C726.256 316.848 617.408 208 483.136 208 348.848 208 240 316.848 240 451.136c0 134.272 108.848 243.12 243.136 243.12z" fill="#000000" p-id="7829">
+      </path>
+    </svg>
+    <span>搜索</span>
+    <span class="search-shortcut-key">Ctrl K</span>
+  </div>
+</div>
+
+          
+          <div class="nav-menu">
+            
+              
+                <a class="nav-menu-item" href="/finance">金融</a>
+              
+                <a class="nav-menu-item" href="/computer">计算机</a>
+              
+                <a class="nav-menu-item" href="/AI">人工智能</a>
+              
+                <a class="nav-menu-item" href="/essay">随笔</a>
+              
+            
+            <a class="nav-menu-item" href='/cv/'>简历</a>
+          </div>
+        </div>
+        <label class="nav-btn" for="navBtn"></label>
+      </div>
+    </div>
+    <div class="body">
+      
+  <article class="post-content">
+    <div class="post-inner">
+      <div class="post-content__head">
+        <div class="post-title">ctp登录、查询</div>
+        <div class="post-info">
+          
+  <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA/" class="post-tag">#计算机</a><a href="/tags/ctp/" class="post-tag">#ctp</a><a href="/tags/%E9%87%91%E8%9E%8D/" class="post-tag">#金融</a>
+
+
+          <span class="post-date">2024-07-25</span>
+        </div>
+      </div>
+      
+      <div class="post-content__body">
+        
+          <div class="post-gallery">
+            
+          </div>
+        
+        <h1 id="登录"><a href="#登录" class="headerlink" title="登录"></a>登录</h1><p>Spi （如 CThostFtdcTraderSpi），包含有所有的响应和回报函数，用于接收综合交易平台发送或交易所发送 综合交易平台转发的信息。开发者需要继承该接口类，并实现其中相应的虚函数</p>
+<p>Api （如 CThostFtdcTraderApi），包含主动发起请求和订阅的接口函数，开发者直接调用即可</p>
+<p>上面是官方文档中的介绍，我们使用时候就是创建api和spi的实例对象即可。所有动作额执行都是通过api发送请求出去，然后ctp柜台接到请求把处理结果通过spi的回调函数返回给客户端，我们的实现逻辑就是重写这些回调函数</p>
+<h2 id="ctp准备工作"><a href="#ctp准备工作" class="headerlink" title="ctp准备工作"></a><strong>ctp准备工作</strong></h2><p>1、创建api实例</p>
+<p>2、创建spi实例</p>
+<p>3、把spi对象注册进api中</p>
+<p>4、设置前置交易地址，订阅公有流和私有流</p>
+<p>5、初始化函数Init()，调用后,接口才开始发起前置的连接请求</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">traderapi = tdapi.CThostFtdcTraderApi_CreateFtdcTraderApi()</span><br><span class="line">traderspi = CTraderSpi(traderapi)</span><br><span class="line">traderapi.RegisterSpi(traderspi)</span><br><span class="line">traderapi.RegisterFront(login_info[<span class="string">&#x27;Trade Front&#x27;</span>])</span><br><span class="line">traderapi.SubscribePrivateTopic(tdapi.THOST_TERT_QUICK)</span><br><span class="line">traderapi.SubscribePublicTopic(tdapi.THOST_TERT_QUICK)</span><br><span class="line">traderapi.Init()</span><br></pre></td></tr></table></figure>
+
+<p>上面是python的程序，其中CTraderSpi自建的类</p>
+<h2 id="ctp登录流程"><a href="#ctp登录流程" class="headerlink" title="ctp登录流程"></a><strong>ctp登录流程</strong></h2><p>1、OnFrontConnected：初始化链接后响应函数，然后这里去执行api.ReqAuthenticate</p>
+<p>2、OnRspAuthenticate：客户端认证回调，在里面再去执行登录动作api.ReqUserLogin</p>
+<p>3、OnRspUserLogin：登录响应，每天第一次需要确认结算单，这里再去执行api.ReqSettlementInfoConfirm</p>
+<p>4、OnRspSettlementInfoConfirm：结算确认响应，这一步其实不需要，到这一步ctp内部的登录流程就走完了</p>
+<h2 id="属性说明"><a href="#属性说明" class="headerlink" title="属性说明"></a><strong>属性说明</strong></h2><p>1、GetTradingDay：这个是api中自带的方法，通过它可以返回当前交易日，对于夜盘晚上会返回下个交易日，如当天是否确认结算单等就可以靠这个来标记</p>
+<p>2、FrontID, SessionID：这两个属性在OnRspUserLogin回报中返回，分别是前置编号和会话编号，其中后者每次重新登录都会不同并且是递增的。许多人撤单会使用 FrontID + SessionID + OrderRef 撤单的方式，不过我个人喜好第二种方式不使用这两个ID而是采用柜台实际编号的方式，具体后面下单环节再细说。我自己目前只是把这两个ID加上前面的交易日组合成本地初始的OrderRef来使用，后续下单时候从OrderRef这个字段读取然后自增1，其他地方没怎么使用</p>
+<p>总体来说ctp登录账户还是比较简单的，可以看到就是一个api函数，然后spi中受到回报进行处理，其实整个ctp的所有操作都是这样一个流程，只要把握好回调函数中各种数据属性及自己本地的落地如何保存就行了</p>
+<h1 id="查询"><a href="#查询" class="headerlink" title="查询"></a>查询</h1><p>ctp中有所谓流控机制，有分为报单流控、查询流控等。报单流控一般不会触发，至少一秒几笔还是可以达到的，但是查询流控就比较恶心</p>
+<p>自从穿透式监管版本以后，API在连接交易前置时，会去查询到前置的查询流控设置（该设置配置在front_se组件）。假设前置配置了2笔&#x2F;秒，那么连接该前置的API每秒只能发起2笔查询请求。</p>
+<p>但是要注意，不管怎么配置，API都内置了在途流控，在途查询流控为1笔。即，当前这笔查询请求发出后，在未收完所有的查询响应前，不能发起下一笔查询请求。</p>
+<p>在过去，查询流控是内置在API里，1笔每秒，在途1笔。</p>
+<p>如果超过交易前置配置的查询流控，则会触发OnRspError，并提示：“CTP：查询未就绪，请稍后重试”</p>
+<p>如果超过API内置的在途流控，则查询请求的返回值为-2，表示未处理请求超过许可数。</p>
+<p>以上是官方文档中的说明，可以看到是没办法支持连续查询的，所以对于偏高频多品种同时交易，成交后去查询持仓这个操作是一定会触发流控的。解决方法可以在返回值非0时候扔到一个队列中，外面专门开一个线程去队列里取值再次查询，或者建立一个while的循环，连续循环比如10次，每次返回失败延迟1秒再去查，查询成功跳出循环结束执行</p>
+<p>个人目前是采用第二种方案，然后在报单成交后查持仓这个动作是直接通过队列专门查询的，以防止查持仓这个动作的延迟影响整个回报函数中接受信息的延迟</p>
+<h2 id="查持仓"><a href="#查持仓" class="headerlink" title="查持仓"></a><strong>查持仓</strong></h2><p>通过查询函数ReqQryInvestorPosition执行后，回调函数OnRspQryInvestorPosition返回持仓信息，ctp的返回是一条记录一条记录的返回的，对于上期的话今仓和老仓是算作两条持仓分别返回</p>
+<p>ReqQryInvestorPosition这个函数的参数结构中如果带上品种合约，则会返回该品种的持仓，如果不设置品种合约，则返回所有持仓合约</p>
+<p>下面重点看下回调函数的返回值</p>
+<p>PositionDate：持仓日期，‘1’表示当前交易日持仓    ‘2’表示是历史仓（只有上期和能源有这个值）</p>
+<p>PosiDirection：是枚举值，’2’表示多头持仓   ‘3’表示空头持仓</p>
+<p>通过这两个属性就能知道当前品种的仓位情况，所以本地构建数据结构名时候就需要根据这两个进行处理。个人使用的方法是把这两个属性相在加上品种代码就得到对应的持仓名称，PositionDate+PosiDirection+InstrumentID</p>
+<p>比如：12:rb2410就可以表示螺纹钢10合约的多头今仓</p>
+<p>除上期所品种: 12表示多头持仓，13表示空头持仓</p>
+<p>上期所品种: 12表示多头今天仓，13表示空头今天仓，22表示多头老仓，23表示空头老仓</p>
+<p>而头寸的具体信息这边保存字典格式如下</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">dict_ = &#123;</span><br><span class="line">        <span class="string">&#x27;总持仓&#x27;</span>: pInvestorPosition.Position,</span><br><span class="line">        <span class="string">&#x27;今持仓&#x27;</span>: pInvestorPosition.TodayPosition,</span><br><span class="line">        <span class="string">&#x27;持仓盈亏&#x27;</span>: pInvestorPosition.PositionProfit,</span><br><span class="line">        <span class="string">&#x27;多头冻结&#x27;</span>: pInvestorPosition.LongFrozen,</span><br><span class="line">        <span class="string">&#x27;空头冻结&#x27;</span>: pInvestorPosition.ShortFrozen,</span><br><span class="line">        <span class="string">&#x27;保证金&#x27;</span>: pInvestorPosition.UseMargin,</span><br><span class="line">        <span class="string">&#x27;持仓成本&#x27;</span>: pInvestorPosition.PositionCost,</span><br><span class="line">        <span class="string">&#x27;开仓成本&#x27;</span>: pInvestorPosition.OpenCost</span><br><span class="line">		&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对于上海的品种，老仓下只有Position没有TodayPosition，而今仓下Position和TodayPosition是相等的</p>
+<p>对于非上海品种，Position就是总的持仓，而TodayPosition就表示今仓</p>
+<p>所以我们平仓时候判断持仓直接去读Position就可以了，一般不用理会今仓</p>
+<p>多头冻结和空头冻结：这两是挂单的意思</p>
+<p>对于多头持仓，多头冻结就是开仓未成交，空头冻结是平多未成交</p>
+<p>对于空头持仓，空头冻结是开空未成交，多头冻结是平空未成交</p>
+<p>所以要计算实际可平数量时候需要根据对应关系自己做好减去冻结的逻辑关系，比如判断可用多头就要用Position-ShortFrozen，实际持仓-对应的平仓挂单</p>
+<h2 id="查帐户资金"><a href="#查帐户资金" class="headerlink" title="查帐户资金"></a><strong>查帐户资金</strong></h2><p>通过查询函数ReqQryTradingAccount执行后，回调函数OnRspQryTradingAccount返回账户的资金情况</p>
+<p>账户的字段解释如下</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">dict_ = &#123;</span><br><span class="line">        <span class="string">&#x27;持仓盈亏&#x27;</span>: pTradingAccount.PositionProfit,</span><br><span class="line">        <span class="string">&#x27;平仓盈亏&#x27;</span>: pTradingAccount.CloseProfit,</span><br><span class="line">        <span class="string">&#x27;手续费&#x27;</span>: pTradingAccount.Commission,</span><br><span class="line">        <span class="string">&#x27;保证金总额&#x27;</span>: pTradingAccount.CurrMargin,</span><br><span class="line">        <span class="string">&#x27;可用资金&#x27;</span>: pTradingAccount.Available,</span><br><span class="line">        <span class="string">&#x27;权益&#x27;</span>: pTradingAccount.Balance,</span><br><span class="line">        <span class="string">&#x27;昨权益&#x27;</span>: pTradingAccount.PreBalance</span><br><span class="line">		&#125;</span><br></pre></td></tr></table></figure>
+
+      </div>
+    </div>
+    
+      <script src='https://unpkg.com/mermaid@latest/dist/mermaid.min.js'></script>
+      <script>
+        if (window.mermaid) {
+          mermaid.initialize({"startOnload":true});
+        }
+      </script>
+    
+  </article>
+  <div class="post__foot">
+    
+      <div class="like-author">
+  <input type="checkbox" id="likeCode" />
+  <div class="author-face">
+    <img height="100px"
+         width="100px"
+         id="front-face"
+         alt="author face"
+         src="/assets/author-face.jpg" />
+    <img height="100px"
+         width="100px"
+         id="back-face"
+         alt="like code"
+         src="/assets/pay-code.jpg" />
+  </div>
+  <div class="like-text">“给作者倒杯卡布奇诺”</div>
+  <label for="likeCode" class="like-btn">
+    <svg viewBox="0 0 1024 1024"
+         width="20px"
+         style="margin-right: 10px"
+         height="20px">
+      <path d="M466.88 908.96L113.824 563.296a270.08 270.08 0 0 1 0-387.392c108.8-106.56 284.896-106.56 393.696 0 1.504 1.472 2.976 2.944 4.448 4.48 1.472-1.536 2.944-3.008 4.448-4.48 108.8-106.56 284.896-106.56 393.696 0a269.952 269.952 0 0 1 34.016 347.072l-387.392 385.6a64 64 0 0 1-89.92 0.384z" p-id="13650" fill="#ee4242" />
+    </svg>
+    喜欢作者
+  </label>
+</div>
+
+    
+    <div class="post-nav">
+  
+    <a class="post-nav-item-left" href="/2024/07/25/quant/ctp2/">
+      <div class="text-align">
+        <svg t="1670570876164"
+             class="icon"
+             viewBox="0 0 1024 1024"
+             width="16"
+             height="16">
+          <path d="M384 512L731.733333 202.666667c17.066667-14.933333 19.2-42.666667 4.266667-59.733334-14.933333-17.066667-42.666667-19.2-59.733333-4.266666l-384 341.333333c-10.666667 8.533333-14.933333 19.2-14.933334 32s4.266667 23.466667 14.933334 32l384 341.333333c8.533333 6.4 19.2 10.666667 27.733333 10.666667 12.8 0 23.466667-4.266667 32-14.933333 14.933333-17.066667 14.933333-44.8-4.266667-59.733334L384 512z" p-id="14596" />
+        </svg>
+        <span class="text-small">上一篇</span>
+      </div>
+      <div>ctp报单</div>
+    </a>
+  
+  <div class="vhr"></div>
+  
+    <div class="post-nav-item-right"></div>
+  
+</div>
+
+    
+      <div class="related-post">
+  <div class="related__head">
+  <a href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA/" class="post-tag">#计算机</a><a href="/tags/ctp/" class="post-tag">#ctp</a><a href="/tags/%E9%87%91%E8%9E%8D/" class="post-tag">#金融</a>
+
+</div>
+  <div class="realated__body">
+    
+      DEBUG: 请安装插件 <a target="_blank" rel="noopener" href="https://github.com/tea3/hexo-related-popular-posts">hexo-related-popular-posts</a> 或关闭 related_post 配置!
+    
+  </div>
+</div>
+
+    
+    
+  </div>
+
+    </div>
+    <div class="foot">
+      <div class="foot-inner">
+        <div class="foot__head">
+          
+            <div class="foot-line">
+              <div class="matts">海</div><div class="matts">内</div><div class="matts">存</div><div class="matts">知</div><div class="matts">己</div>
+            </div>
+          
+            <div class="foot-line">
+              <div class="matts">天</div><div class="matts">涯</div><div class="matts">若</div><div class="matts">比</div><div class="matts">邻</div>
+            </div>
+          
+        </div>
+        <div class="foot__body">
+          
+            <div class="foot-item">
+              <div class="foot-item__head">朋友</div>
+              <div class="foot-item__body">
+                
+                  <div class="text">
+                    <img alt="link" height="20px" width="20px" src="/images/icon/icon-link.svg" />
+                    <a class="foot-link" target="_blank" rel="noopener" href="https://github.com/hooozen/hexo-theme-tranquility">Theme Tranquility</a>
+                  </div>
+                
+                  <div class="text">
+                    <img alt="link" height="20px" width="20px" src="/images/icon/icon-link.svg" />
+                    <a class="foot-link" target="_blank" rel="noopener" href="https://hozen.site">浩然的主页</a>
+                  </div>
+                
+                <div class="text">
+                  <img alt="link" height="20px" width="20px" src="/images/icon/icon-link+.svg" />
+                  <a class="foot-link"
+                     href="mailto:example@email.com?subject=%E7%94%B3%E8%AF%B7%20Hozen.site%20%E7%9A%84%E5%8F%8B%E9%93%BE%E4%BD%8D%E7%BD%AE">
+                  申请友链</a>
+                </div>
+              </div>
+            </div>
+          
+          
+            <div class="foot-item">
+              <div class="foot-item__head">账号</div>
+              <div class="foot-item__body">
+                
+                  <div class="text">
+                    <img alt="link" height="20px" width="20px" src="/images/logo-github.svg" />
+                    <a class="foot-link" target="_blank" rel="noopener" href="https://github.com/hooozen">hooozen</a>
+                  </div>
+                
+                  <div class="text">
+                    <img alt="link" height="20px" width="20px" src="/images/logo-wx.svg" />
+                    <a class="foot-link" target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s?__biz=MzI3NzQ4NDkzNg==&mid=2247484469&idx=1&sn=8a442bb67397f52cce5c38c3f9b41e36&chksm=eb64c0d2dc1349c40d2e1bb55615ae28b3f2951be22f00717b9ade98c851082e42dc666ab45d#rd">谁在胡言乱语</a>
+                  </div>
+                
+                  <div class="text">
+                    <img alt="link" height="20px" width="20px" src="/images/logo-zh.svg" />
+                    <a class="foot-link" target="_blank" rel="noopener" href="https://www.zhihu.com/people/hozen">Mundooo</a>
+                  </div>
+                
+              </div>
+            </div>
+          
+          <div class="foot-item">
+            <div class="foot-item__head">联系</div>
+            <div class="foot-item__body">
+              <div class="text">
+                <img alt="link" height="20px" width="20px" src="/images/icon/icon-email.svg" />
+                <a class="foot-link" href="mailto:example@email.com">example@email.com</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="copyright">
+          <a href="http://example.com">Hexo</a> &nbsp;|&nbsp;由&nbsp;<a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>&nbsp;及&nbsp;
+          <svg width="20" height="20" viewBox="0 0 725 725">
+            <path fill-rule="evenodd" fill="rgb(221, 221, 221)" d="M145.870,236.632 L396.955,103.578 L431.292,419.44 L156.600,522.53 L145.870,236.632 Z" />
+            <path fill-rule="evenodd" fill="rgb(159, 159, 159)" d="M396.955,103.578 L564.345,234.486 L611.558,513.469 L431.292,419.44 L396.955,103.578 Z" />
+            <path fill-rule="evenodd" fill="rgb(0, 0, 0)" d="M431.292,419.44 L611.558,513.469 L358.327,595.18 L156.600,522.53 L431.292,419.44 Z" />
+          </svg>
+          <a target="_blank" rel="noopener" href="https://github.com/hooozen/hexo-theme-tranquility">致远</a>&nbsp;驱动
+        </div>
+      </div>
+    </div>
+    
+    
+      <script src="/js/search.js"></script>
+      <script>searchInitialize("/search.json")</script>
+    
+    
+  
+
+  </body>
+</html>
