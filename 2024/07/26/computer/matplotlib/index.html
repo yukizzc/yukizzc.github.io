@@ -1,0 +1,715 @@
+<!DOCTYPE html><html lang="zh-C" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>matplotlib | Z</title><meta name="author" content="ZZC"><meta name="copyright" content="ZZC"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Matplotlib 是 Python 的 2D 绘图库，用于生成高质量的图表（如折线图、散点图、柱状图等） 1234# 常用模块matplotlib.pyplot# 通常导入为 import matplotlib.pyplot as plt 属性 线条相关属性 plt.plot() 本身支持许多参数，用于控制线条样式、颜色、宽度等：  color：线条颜色（例如 ‘blue’、‘r’、#FF57">
+<meta property="og:type" content="article">
+<meta property="og:title" content="matplotlib">
+<meta property="og:url" content="https://yukizzc.github.io/2024/07/26/computer/matplotlib/index.html">
+<meta property="og:site_name" content="Z">
+<meta property="og:description" content="Matplotlib 是 Python 的 2D 绘图库，用于生成高质量的图表（如折线图、散点图、柱状图等） 1234# 常用模块matplotlib.pyplot# 通常导入为 import matplotlib.pyplot as plt 属性 线条相关属性 plt.plot() 本身支持许多参数，用于控制线条样式、颜色、宽度等：  color：线条颜色（例如 ‘blue’、‘r’、#FF57">
+<meta property="og:locale">
+<meta property="og:image" content="https://yukizzc.github.io/images/%E6%9D%A8%E5%A8%81%E5%88%A9.jpg">
+<meta property="article:published_time" content="2024-07-25T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-03-28T14:48:28.955Z">
+<meta property="article:author" content="ZZC">
+<meta property="article:tag" content="python">
+<meta property="article:tag" content="绘图">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://yukizzc.github.io/images/%E6%9D%A8%E5%A8%81%E5%88%A9.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "matplotlib",
+  "url": "https://yukizzc.github.io/2024/07/26/computer/matplotlib/",
+  "image": "https://yukizzc.github.io/images/%E6%9D%A8%E5%A8%81%E5%88%A9.jpg",
+  "datePublished": "2024-07-25T16:00:00.000Z",
+  "dateModified": "2026-03-28T14:48:28.955Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "ZZC",
+      "url": "https://yukizzc.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://yukizzc.github.io/2024/07/26/computer/matplotlib/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"No results found for: ${query}","hits_stats":"${hits} articles found"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":true,"highlightMacStyle":true},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'matplotlib',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="bg-animation" id="web_bg" style="background-color: #E8F4F8;"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/images/%E6%9D%A8%E5%A8%81%E5%88%A9.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">59</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">28</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">5</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><span class="site-page group"><span> 分类</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/categories/finance/"><i class="fa-fw fas fa-chart-line"></i><span> 金融</span></a></li><li><a class="site-page child" href="/categories/computer/"><i class="fa-fw fas fa-code"></i><span> 计算机</span></a></li><li><a class="site-page child" href="/categories/essay/"><i class="fa-fw fas fa-heart"></i><span> 随文</span></a></li><li><a class="site-page child" href="/categories/mathematical/"><i class="fa-fw fas fa-atom"></i><span> 数理</span></a></li><li><a class="site-page child" href="/categories/misc/"><i class="fa-fw fas fa-comment-dots"></i><span> 其他</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-calendar-alt"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg fixed" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Z</span></a><a class="nav-page-title" href="/"><span class="site-name">matplotlib</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  Back to Home</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> Search</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><span class="site-page group"><span> 分类</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/categories/finance/"><i class="fa-fw fas fa-chart-line"></i><span> 金融</span></a></li><li><a class="site-page child" href="/categories/computer/"><i class="fa-fw fas fa-code"></i><span> 计算机</span></a></li><li><a class="site-page child" href="/categories/essay/"><i class="fa-fw fas fa-heart"></i><span> 随文</span></a></li><li><a class="site-page child" href="/categories/mathematical/"><i class="fa-fw fas fa-atom"></i><span> 数理</span></a></li><li><a class="site-page child" href="/categories/misc/"><i class="fa-fw fas fa-comment-dots"></i><span> 其他</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-calendar-alt"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">matplotlib</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2024-07-25T16:00:00.000Z" title="Created 2024-07-26 00:00:00">2024-07-26</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2026-03-28T14:48:28.955Z" title="Updated 2026-03-28 22:48:28">2026-03-28</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/computer/">computer</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>Matplotlib 是 Python 的 2D 绘图库，用于生成高质量的图表（如折线图、散点图、柱状图等）</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 常用模块</span></span><br><span class="line">matplotlib.pyplot</span><br><span class="line"><span class="comment"># 通常导入为 </span></span><br><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br></pre></td></tr></table></figure>
+<h1>属性</h1>
+<h2 id="线条相关属性">线条相关属性</h2>
+<p>plt.plot() 本身支持许多参数，用于控制线条样式、颜色、宽度等：</p>
+<ul>
+<li>color：线条颜色（例如 ‘blue’、‘r’、#FF5733’）</li>
+<li>linewidth 或 lw：线条宽度（例如 2.5）</li>
+<li>linestyle 或 ls：线条样式（例如 ‘-’ 实线、‘–’ 虚线、‘:’ 点线）</li>
+<li>marker：数据点的标记样式（例如 ‘o’ 圆点、‘s’ 方块、‘^’ 三角形）</li>
+<li>markersize 或 ms：标记大小</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line">plt.plot([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>], [<span class="number">10</span>, <span class="number">20</span>, <span class="number">25</span>, <span class="number">30</span>], color=<span class="string">&#x27;green&#x27;</span>, </span><br><span class="line">         linewidth=<span class="number">2</span>, linestyle=<span class="string">&#x27;--&#x27;</span>,marker=<span class="string">&#x27;o&#x27;</span>, markersize=<span class="number">8</span>)</span><br><span class="line">plt.title(<span class="string">&quot;Customized Line&quot;</span>)</span><br><span class="line">plt.xlabel(<span class="string">&quot;X-axis&quot;</span>)</span><br><span class="line">plt.ylabel(<span class="string">&quot;Y-axis&quot;</span>)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<h2 id="坐标轴相关属性">坐标轴相关属性</h2>
+<p>可以通过 plt 或 Axes 对象调整坐标轴的宽度、范围、刻度等：</p>
+<ul>
+<li>plt.xlim(min, max) / plt.ylim(min, max)：设置 x 和 y 轴的显示范围</li>
+<li>plt.axis([xmin, xmax, ymin, ymax])：同时设置 x 和 y 轴范围</li>
+<li>plt.tick_params()：调整刻度的样式（长度、宽度、方向等）</li>
+<li>plt.xticks() / plt.yticks()：自定义刻度位置和标签</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"></span><br><span class="line">plt.plot([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>], [<span class="number">10</span>, <span class="number">20</span>, <span class="number">25</span>, <span class="number">30</span>])</span><br><span class="line">plt.xlim(<span class="number">0</span>, <span class="number">5</span>)  <span class="comment"># x 轴范围</span></span><br><span class="line">plt.ylim(<span class="number">0</span>, <span class="number">40</span>)  <span class="comment"># y 轴范围</span></span><br><span class="line">plt.xticks([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>], rotation=<span class="number">45</span>)  <span class="comment"># 自定义 x 轴刻度并旋转 45 度</span></span><br><span class="line">plt.yticks([<span class="number">10</span>, <span class="number">20</span>, <span class="number">30</span>], [<span class="string">&#x27;Low&#x27;</span>, <span class="string">&#x27;Medium&#x27;</span>, <span class="string">&#x27;High&#x27;</span>])  <span class="comment"># 自定义 y 轴刻度标签</span></span><br><span class="line">plt.title(<span class="string">&quot;Axis Customization&quot;</span>)</span><br><span class="line">plt.xlabel(<span class="string">&quot;X-axis&quot;</span>)</span><br><span class="line">plt.ylabel(<span class="string">&quot;Y-axis&quot;</span>)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<h2 id="调整坐标轴线宽度（Spines）">调整坐标轴线宽度（Spines）</h2>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"></span><br><span class="line">fig, ax = plt.subplots()  <span class="comment"># 创建子图</span></span><br><span class="line">ax.plot([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>], [<span class="number">10</span>, <span class="number">20</span>, <span class="number">25</span>, <span class="number">30</span>])</span><br><span class="line">ax.spines[<span class="string">&#x27;top&#x27;</span>].set_linewidth(<span class="number">2.0</span>)    <span class="comment"># 上边框宽度</span></span><br><span class="line">ax.spines[<span class="string">&#x27;right&#x27;</span>].set_linewidth(<span class="number">2.0</span>)  <span class="comment"># 右边框宽度</span></span><br><span class="line">ax.spines[<span class="string">&#x27;bottom&#x27;</span>].set_linewidth(<span class="number">1.5</span>) <span class="comment"># 下边框宽度</span></span><br><span class="line">ax.spines[<span class="string">&#x27;left&#x27;</span>].set_linewidth(<span class="number">1.5</span>)   <span class="comment"># 左边框宽度</span></span><br><span class="line">ax.set_title(<span class="string">&quot;Spine Width&quot;</span>)</span><br><span class="line">ax.set_xlabel(<span class="string">&quot;X-axis&quot;</span>)</span><br><span class="line">ax.set_ylabel(<span class="string">&quot;Y-axis&quot;</span>)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<h2 id="刻度显示数量和样式">刻度显示数量和样式</h2>
+<ul>
+<li>plt.locator_params()：控制刻度数量</li>
+<li>plt.tick_params()：调整刻度线的长度、宽度、方向等</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"></span><br><span class="line">plt.plot([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>], [<span class="number">10</span>, <span class="number">20</span>, <span class="number">25</span>, <span class="number">30</span>])</span><br><span class="line">plt.locator_params(axis=<span class="string">&#x27;x&#x27;</span>, nbins=<span class="number">5</span>)  <span class="comment"># x 轴最多显示 5 个刻度</span></span><br><span class="line">plt.locator_params(axis=<span class="string">&#x27;y&#x27;</span>, nbins=<span class="number">3</span>)  <span class="comment"># y 轴最多显示 3 个刻度</span></span><br><span class="line">plt.tick_params(axis=<span class="string">&#x27;both&#x27;</span>, length=<span class="number">10</span>, width=<span class="number">1.5</span>, direction=<span class="string">&#x27;in&#x27;</span>)  <span class="comment"># 刻度样式</span></span><br><span class="line">plt.title(<span class="string">&quot;Tick Customization&quot;</span>)</span><br><span class="line">plt.xlabel(<span class="string">&quot;X-axis&quot;</span>)</span><br><span class="line">plt.ylabel(<span class="string">&quot;Y-axis&quot;</span>)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<h2 id="网格线">网格线</h2>
+<p>可以用 plt.grid() 添加网格线，并调整样式：</p>
+<ul>
+<li>plt.grid(True)：显示网格</li>
+<li>color、linestyle、linewidth：自定义网格样式</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"></span><br><span class="line">plt.plot([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>], [<span class="number">10</span>, <span class="number">20</span>, <span class="number">25</span>, <span class="number">30</span>])</span><br><span class="line">plt.grid(<span class="literal">True</span>, color=<span class="string">&#x27;gray&#x27;</span>, linestyle=<span class="string">&#x27;--&#x27;</span>, linewidth=<span class="number">0.5</span>)</span><br><span class="line">plt.title(<span class="string">&quot;With Grid&quot;</span>)</span><br><span class="line">plt.xlabel(<span class="string">&quot;X-axis&quot;</span>)</span><br><span class="line">plt.ylabel(<span class="string">&quot;Y-axis&quot;</span>)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<h2 id="图表整体样式">图表整体样式</h2>
+<ul>
+<li>
+<p>plt.figure(figsize=(width, height))：设置图表大小（单位：英寸）</p>
+</li>
+<li>
+<p>plt.style.use(‘style_name’)：使用预定义样式（如 ‘ggplot’、‘seaborn’）</p>
+</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"></span><br><span class="line">plt.figure(figsize=(<span class="number">8</span>, <span class="number">6</span>))  <span class="comment"># 设置图表大小</span></span><br><span class="line">plt.style.use(<span class="string">&#x27;ggplot&#x27;</span>)     <span class="comment"># 使用 ggplot 样式</span></span><br><span class="line">plt.plot([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>], [<span class="number">10</span>, <span class="number">20</span>, <span class="number">25</span>, <span class="number">30</span>])</span><br><span class="line">plt.title(<span class="string">&quot;Styled Plot&quot;</span>)</span><br><span class="line">plt.xlabel(<span class="string">&quot;X-axis&quot;</span>)</span><br><span class="line">plt.ylabel(<span class="string">&quot;Y-axis&quot;</span>)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<h2 id="其他常用属性">其他常用属性</h2>
+<ul>
+<li>plt.legend()：添加图例（需在 plt.plot() 中指定 label）</li>
+<li>plt.text(x, y, ‘text’)：在图中添加文本</li>
+<li>plt.annotate(‘text’, xy=(x, y))：添加带箭头的标注</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"></span><br><span class="line">plt.plot([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>], [<span class="number">10</span>, <span class="number">20</span>, <span class="number">25</span>, <span class="number">30</span>], label=<span class="string">&#x27;Line 1&#x27;</span>)</span><br><span class="line">plt.plot([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>], [<span class="number">5</span>, <span class="number">15</span>, <span class="number">20</span>, <span class="number">25</span>], label=<span class="string">&#x27;Line 2&#x27;</span>)</span><br><span class="line">plt.legend()  <span class="comment"># 显示图例</span></span><br><span class="line">plt.text(<span class="number">2</span>, <span class="number">25</span>, <span class="string">&#x27;Peak&#x27;</span>, fontsize=<span class="number">12</span>)  <span class="comment"># 添加文本</span></span><br><span class="line">plt.title(<span class="string">&quot;With Legend and Text&quot;</span>)</span><br><span class="line">plt.xlabel(<span class="string">&quot;X-axis&quot;</span>)</span><br><span class="line">plt.ylabel(<span class="string">&quot;Y-axis&quot;</span>)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<h2 id="中文字体">中文字体</h2>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"></span><br><span class="line"><span class="comment"># 设置全局字体为支持中文的字体，例如 &#x27;SimHei&#x27;（黑体）</span></span><br><span class="line">plt.rcParams[<span class="string">&#x27;font.sans-serif&#x27;</span>] = [<span class="string">&#x27;SimHei&#x27;</span>]  <span class="comment"># Windows 系统常用</span></span><br><span class="line"><span class="comment"># 或者使用其他字体，例如：</span></span><br><span class="line"><span class="comment"># plt.rcParams[&#x27;font.sans-serif&#x27;] = [&#x27;Arial Unicode MS&#x27;]  # MacOS 默认支持</span></span><br><span class="line"><span class="comment"># plt.rcParams[&#x27;font.sans-serif&#x27;] = [&#x27;Microsoft YaHei&#x27;]  # 微软雅黑</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 解决负号 &#x27;-&#x27; 显示为方块的问题（可选）</span></span><br><span class="line">plt.rcParams[<span class="string">&#x27;axes.unicode_minus&#x27;</span>] = <span class="literal">False</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 示例数据和绘图</span></span><br><span class="line">plt.plot([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>], [<span class="number">10</span>, <span class="number">20</span>, <span class="number">25</span>, <span class="number">30</span>])</span><br><span class="line">plt.title(<span class="string">&quot;中文标题&quot;</span>)</span><br><span class="line">plt.xlabel(<span class="string">&quot;X轴&quot;</span>)</span><br><span class="line">plt.ylabel(<span class="string">&quot;Y轴&quot;</span>)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<h1>常用图表</h1>
+<p>总结表</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">图表类型</th>
+<th style="text-align:center">函数</th>
+<th style="text-align:center">适用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">折线图</td>
+<td style="text-align:center">plt.plot()</td>
+<td style="text-align:center">趋势变化</td>
+</tr>
+<tr>
+<td style="text-align:center">散点图</td>
+<td style="text-align:center">plt.scatter()</td>
+<td style="text-align:center">数据点关系</td>
+</tr>
+<tr>
+<td style="text-align:center">柱状图</td>
+<td style="text-align:center">plt.bar()</td>
+<td style="text-align:center">类别比较</td>
+</tr>
+<tr>
+<td style="text-align:center">直方图</td>
+<td style="text-align:center">plt.hist()</td>
+<td style="text-align:center">数据分布</td>
+</tr>
+<tr>
+<td style="text-align:center">饼图</td>
+<td style="text-align:center">plt.pie()</td>
+<td style="text-align:center">比例分配</td>
+</tr>
+<tr>
+<td style="text-align:center">面积图</td>
+<td style="text-align:center">plt.fill_between()</td>
+<td style="text-align:center">累积变化</td>
+</tr>
+<tr>
+<td style="text-align:center">箱线图</td>
+<td style="text-align:center">plt.boxplot()</td>
+<td style="text-align:center">统计分布</td>
+</tr>
+<tr>
+<td style="text-align:center">热力图</td>
+<td style="text-align:center">plt.imshow()</td>
+<td style="text-align:center">数据强度/相关性</td>
+</tr>
+<tr>
+<td style="text-align:center">多子图</td>
+<td style="text-align:center">plt.subplots()</td>
+<td style="text-align:center">多图对比</td>
+</tr>
+</tbody>
+</table>
+<h2 id="折线图">折线图</h2>
+<p><strong>用途</strong>：展示数据随时间或其他连续变量的变化趋势</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"></span><br><span class="line">x = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>]</span><br><span class="line">y = [<span class="number">10</span>, <span class="number">20</span>, <span class="number">25</span>, <span class="number">30</span>]</span><br><span class="line">plt.plot(x, y, <span class="string">&#x27;b-o&#x27;</span>, label=<span class="string">&#x27;销量&#x27;</span>)  <span class="comment"># &#x27;b-o&#x27; 表示蓝色折线带圆点</span></span><br><span class="line">plt.title(<span class="string">&#x27;销量变化趋势&#x27;</span>)</span><br><span class="line">plt.xlabel(<span class="string">&#x27;月份&#x27;</span>)</span><br><span class="line">plt.ylabel(<span class="string">&#x27;销量&#x27;</span>)</span><br><span class="line">plt.legend()  <span class="comment"># 显示图例</span></span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<h2 id="散点图">散点图</h2>
+<p><strong>用途</strong>：显示两个变量之间的关系，适合离散数据点</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"></span><br><span class="line">x = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>]</span><br><span class="line">y = [<span class="number">10</span>, <span class="number">15</span>, <span class="number">25</span>, <span class="number">30</span>]</span><br><span class="line">plt.scatter(x, y, color=<span class="string">&#x27;red&#x27;</span>, marker=<span class="string">&#x27;^&#x27;</span>, s=<span class="number">100</span>)  <span class="comment"># s 是点的大小</span></span><br><span class="line">plt.title(<span class="string">&#x27;学生成绩分布&#x27;</span>)</span><br><span class="line">plt.xlabel(<span class="string">&#x27;学习时间&#x27;</span>)</span><br><span class="line">plt.ylabel(<span class="string">&#x27;成绩&#x27;</span>)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<h2 id="柱状图">柱状图</h2>
+<p><strong>用途</strong>：比较不同类别的数据大小</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"></span><br><span class="line">categories = [<span class="string">&#x27;A&#x27;</span>, <span class="string">&#x27;B&#x27;</span>, <span class="string">&#x27;C&#x27;</span>]</span><br><span class="line">values = [<span class="number">5</span>, <span class="number">7</span>, <span class="number">3</span>]</span><br><span class="line">plt.bar(categories, values, color=<span class="string">&#x27;skyblue&#x27;</span>, width=<span class="number">0.5</span>)</span><br><span class="line">plt.title(<span class="string">&#x27;各产品销量&#x27;</span>)</span><br><span class="line">plt.xlabel(<span class="string">&#x27;产品&#x27;</span>)</span><br><span class="line">plt.ylabel(<span class="string">&#x27;销量&#x27;</span>)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<h2 id="直方图">直方图</h2>
+<p><strong>用途</strong>：展示数据的分布情况</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line">data = np.random.randn(<span class="number">1000</span>)  <span class="comment"># 生成随机数据</span></span><br><span class="line">plt.hist(data, bins=<span class="number">30</span>, color=<span class="string">&#x27;green&#x27;</span>, alpha=<span class="number">0.7</span>)  <span class="comment"># bins 是柱子数量</span></span><br><span class="line">plt.title(<span class="string">&#x27;成绩分布&#x27;</span>)</span><br><span class="line">plt.xlabel(<span class="string">&#x27;分数&#x27;</span>)</span><br><span class="line">plt.ylabel(<span class="string">&#x27;频数&#x27;</span>)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<h2 id="饼图">饼图</h2>
+<p><strong>用途</strong>：表示各部分占总体的比例</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"></span><br><span class="line">sizes = [<span class="number">30</span>, <span class="number">40</span>, <span class="number">20</span>, <span class="number">10</span>]</span><br><span class="line">labels = [<span class="string">&#x27;苹果&#x27;</span>, <span class="string">&#x27;香蕉&#x27;</span>, <span class="string">&#x27;橙子&#x27;</span>, <span class="string">&#x27;梨&#x27;</span>]</span><br><span class="line">plt.pie(sizes, labels=labels, autopct=<span class="string">&#x27;%1.1f%%&#x27;</span>, startangle=<span class="number">90</span>)  <span class="comment"># autopct 显示百分比</span></span><br><span class="line">plt.title(<span class="string">&#x27;水果销售占比&#x27;</span>)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<h2 id="面积图">面积图</h2>
+<p><strong>用途</strong>：展示数据的累积变化，通常用于时间序列</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"></span><br><span class="line">x = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>]</span><br><span class="line">y = [<span class="number">10</span>, <span class="number">20</span>, <span class="number">25</span>, <span class="number">30</span>]</span><br><span class="line">plt.fill_between(x, y, color=<span class="string">&#x27;lightblue&#x27;</span>, alpha=<span class="number">0.5</span>)</span><br><span class="line">plt.title(<span class="string">&#x27;累计收入&#x27;</span>)</span><br><span class="line">plt.xlabel(<span class="string">&#x27;月份&#x27;</span>)</span><br><span class="line">plt.ylabel(<span class="string">&#x27;收入&#x27;</span>)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<h2 id="箱线图">箱线图</h2>
+<p><strong>用途</strong>：展示数据的分布、离群点和中位数等统计特征</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line">data = [np.random.normal(<span class="number">100</span>, <span class="number">10</span>, <span class="number">200</span>), np.random.normal(<span class="number">90</span>, <span class="number">20</span>, <span class="number">200</span>)]</span><br><span class="line">plt.boxplot(data, tick_labels=[<span class="string">&#x27;组1&#x27;</span>, <span class="string">&#x27;组2&#x27;</span>])</span><br><span class="line">plt.title(<span class="string">&#x27;成绩分布比较&#x27;</span>)</span><br><span class="line">plt.ylabel(<span class="string">&#x27;分数&#x27;</span>)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<h2 id="热力图">热力图</h2>
+<p><strong>用途</strong>：展示二维数据的强度或相关性</p>
+<p><strong>函数</strong>：需要结合 plt.imshow() 或 seaborn（更推荐）</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line">data = np.random.rand(<span class="number">5</span>, <span class="number">5</span>)</span><br><span class="line">plt.imshow(data, cmap=<span class="string">&#x27;YlOrRd&#x27;</span>)  <span class="comment"># cmap 指定颜色映射</span></span><br><span class="line">plt.colorbar()  <span class="comment"># 添加颜色条</span></span><br><span class="line">plt.title(<span class="string">&#x27;热力图示例&#x27;</span>)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<h1>多图组合</h1>
+<p>matplotlib 提供了多种方法来创建多子图，主要通过 plt.subplots() 或 plt.subplot() 实现。可以选择将多个子图放在一起绘制（共享一个画布）或分开绘制（独立窗口或画布）</p>
+<h2 id="叠加图形">叠加图形</h2>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">import</span> matplotlib.gridspec <span class="keyword">as</span> gridspec</span><br><span class="line">plt.rcParams[<span class="string">&#x27;font.sans-serif&#x27;</span>] = [<span class="string">&#x27;SimHei&#x27;</span>]  <span class="comment"># Windows 系统常用</span></span><br><span class="line">plt.rcParams[<span class="string">&#x27;axes.unicode_minus&#x27;</span>] = <span class="literal">False</span></span><br><span class="line"></span><br><span class="line">x = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>]</span><br><span class="line">y1 = [<span class="number">10</span>, <span class="number">20</span>, <span class="number">25</span>, <span class="number">30</span>]  <span class="comment"># 柱状图数据</span></span><br><span class="line">y2 = [<span class="number">12</span>, <span class="number">18</span>, <span class="number">22</span>, <span class="number">28</span>]  <span class="comment"># 折线图数据</span></span><br><span class="line">y3 = [<span class="number">8</span>, <span class="number">23</span>, <span class="number">20</span>, <span class="number">32</span>]   <span class="comment"># 散点图数据</span></span><br><span class="line"></span><br><span class="line">plt.bar(x, y1, color=<span class="string">&#x27;lightgreen&#x27;</span>, alpha=<span class="number">0.7</span>, label=<span class="string">&#x27;基础值&#x27;</span>)  <span class="comment"># 柱状图</span></span><br><span class="line">plt.plot(x, y2, <span class="string">&#x27;b--&#x27;</span>, label=<span class="string">&#x27;趋势线&#x27;</span>)                        <span class="comment"># 折线图</span></span><br><span class="line">plt.scatter(x, y3, color=<span class="string">&#x27;red&#x27;</span>, label=<span class="string">&#x27;测量值&#x27;</span>)                <span class="comment"># 散点图</span></span><br><span class="line">plt.title(<span class="string">&#x27;多类型图表叠加&#x27;</span>)</span><br><span class="line">plt.xlabel(<span class="string">&#x27;时间&#x27;</span>)</span><br><span class="line">plt.ylabel(<span class="string">&#x27;数值&#x27;</span>)</span><br><span class="line">plt.legend()</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<h2 id="共享画布">共享画布</h2>
+<p>**plt.subplots() **</p>
+<ul>
+<li><strong>描述</strong>：一次性创建整个画布和多个子图，返回 Figure 和 Axes 对象</li>
+<li>参数
+<ul>
+<li>nrows：行数</li>
+<li>ncols：列数</li>
+<li>figsize：画布大小</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line">plt.rcParams[<span class="string">&#x27;font.sans-serif&#x27;</span>] = [<span class="string">&#x27;SimHei&#x27;</span>]  <span class="comment"># Windows 系统常用</span></span><br><span class="line">plt.rcParams[<span class="string">&#x27;axes.unicode_minus&#x27;</span>] = <span class="literal">False</span></span><br><span class="line"><span class="comment"># 创建 2 行 2 列的子图</span></span><br><span class="line">fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(<span class="number">2</span>, <span class="number">2</span>, figsize=(<span class="number">10</span>, <span class="number">8</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 数据</span></span><br><span class="line">x = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>]</span><br><span class="line">y1 = [<span class="number">10</span>, <span class="number">20</span>, <span class="number">25</span>, <span class="number">30</span>]</span><br><span class="line">y2 = [<span class="number">5</span>, <span class="number">15</span>, <span class="number">10</span>, <span class="number">20</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment"># 绘制子图</span></span><br><span class="line">ax1.plot(x, y1, <span class="string">&#x27;b-&#x27;</span>)</span><br><span class="line">ax1.set_title(<span class="string">&#x27;a&#x27;</span>)</span><br><span class="line">ax2.bar(x, y2, color=<span class="string">&#x27;orange&#x27;</span>)</span><br><span class="line">ax2.set_title(<span class="string">&#x27;柱状图&#x27;</span>)</span><br><span class="line">ax3.scatter(x, y1, color=<span class="string">&#x27;red&#x27;</span>)</span><br><span class="line">ax3.set_title(<span class="string">&#x27;散点图&#x27;</span>)</span><br><span class="line">ax4.pie([<span class="number">30</span>, <span class="number">40</span>, <span class="number">30</span>], labels=[<span class="string">&#x27;A&#x27;</span>, <span class="string">&#x27;B&#x27;</span>, <span class="string">&#x27;C&#x27;</span>])</span><br><span class="line">ax4.set_title(<span class="string">&#x27;饼图&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 调整布局，防止重叠</span></span><br><span class="line">plt.tight_layout()</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<p><strong>plt.subplot()</strong></p>
+<ul>
+<li><strong>描述</strong>：逐个添加子图，适合动态调整或手动布局</li>
+<li><strong>参数</strong>：plt.subplot(nrows, ncols, index)，index 从 1 开始</li>
+<li><strong>特点</strong>：更灵活，但需要手动指定每个子图的位置</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line">plt.rcParams[<span class="string">&#x27;font.sans-serif&#x27;</span>] = [<span class="string">&#x27;SimHei&#x27;</span>]  <span class="comment"># Windows 系统常用</span></span><br><span class="line">plt.rcParams[<span class="string">&#x27;axes.unicode_minus&#x27;</span>] = <span class="literal">False</span></span><br><span class="line"></span><br><span class="line">x = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>]</span><br><span class="line">y = [<span class="number">10</span>, <span class="number">20</span>, <span class="number">25</span>, <span class="number">30</span>]</span><br><span class="line"></span><br><span class="line">plt.subplot(<span class="number">2</span>, <span class="number">1</span>, <span class="number">1</span>)  <span class="comment"># 2 行 1 列，第 1 个子图</span></span><br><span class="line">plt.plot(x, y, <span class="string">&#x27;r-&#x27;</span>)</span><br><span class="line">plt.title(<span class="string">&#x27;上图&#x27;</span>)</span><br><span class="line"></span><br><span class="line">plt.subplot(<span class="number">2</span>, <span class="number">1</span>, <span class="number">2</span>)  <span class="comment"># 2 行 1 列，第 2 个子图</span></span><br><span class="line">plt.bar(x, y, color=<span class="string">&#x27;blue&#x27;</span>)</span><br><span class="line">plt.title(<span class="string">&#x27;下图&#x27;</span>)</span><br><span class="line"></span><br><span class="line">plt.tight_layout()</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<h2 id="独立画布">独立画布</h2>
+<p><strong>方法</strong>：多次调用 plt.figure() 创建多个独立的 Figure 对象，每次绘图后调用 plt.show()</p>
+<p><strong>特点</strong>：</p>
+<ul>
+<li>每个图表有独立的画布，显示在单独的窗口或分开保存</li>
+<li>适合需要独立查看或保存的场景</li>
+</ul>
+<p><strong>常用场景</strong>：不需要直接对比，或希望分开展示</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line">plt.rcParams[<span class="string">&#x27;font.sans-serif&#x27;</span>] = [<span class="string">&#x27;SimHei&#x27;</span>]  <span class="comment"># Windows 系统常用</span></span><br><span class="line">plt.rcParams[<span class="string">&#x27;axes.unicode_minus&#x27;</span>] = <span class="literal">False</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">x = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>]</span><br><span class="line">y = [<span class="number">10</span>, <span class="number">20</span>, <span class="number">25</span>, <span class="number">30</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment"># 第一个画布</span></span><br><span class="line">plt.figure(figsize=(<span class="number">5</span>, <span class="number">4</span>))  <span class="comment"># 创建第一个 Figure</span></span><br><span class="line">plt.plot(x, y, <span class="string">&#x27;b-&#x27;</span>)</span><br><span class="line">plt.title(<span class="string">&#x27;折线图&#x27;</span>)</span><br><span class="line">plt.show()  <span class="comment"># 显示并关闭第一个画布</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 第二个画布</span></span><br><span class="line">plt.figure(figsize=(<span class="number">5</span>, <span class="number">4</span>))  <span class="comment"># 创建第二个 Figure</span></span><br><span class="line">plt.bar(x, y, color=<span class="string">&#x27;orange&#x27;</span>)</span><br><span class="line">plt.title(<span class="string">&#x27;柱状图&#x27;</span>)</span><br><span class="line">plt.show()  <span class="comment"># 显示第二个画布</span></span><br></pre></td></tr></table></figure>
+<h2 id="共享坐标轴">共享坐标轴</h2>
+<p><strong>用途</strong>：多个子图共享 x 或 y 轴，适合对比数据</p>
+<p><strong>参数</strong>：sharex 或 sharey</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"></span><br><span class="line">fig, (ax1, ax2) = plt.subplots(<span class="number">2</span>, <span class="number">1</span>, sharex=<span class="literal">True</span>, figsize=(<span class="number">6</span>, <span class="number">6</span>))</span><br><span class="line">x = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>]</span><br><span class="line">y1 = [<span class="number">10</span>, <span class="number">20</span>, <span class="number">25</span>, <span class="number">30</span>]</span><br><span class="line">y2 = [<span class="number">5</span>, <span class="number">15</span>, <span class="number">10</span>, <span class="number">20</span>]</span><br><span class="line"></span><br><span class="line">ax1.plot(x, y1, <span class="string">&#x27;b-&#x27;</span>)</span><br><span class="line">ax1.set_title(<span class="string">&#x27;上图&#x27;</span>)</span><br><span class="line">ax2.plot(x, y2, <span class="string">&#x27;r-&#x27;</span>)</span><br><span class="line">ax2.set_title(<span class="string">&#x27;下图&#x27;</span>)</span><br><span class="line"></span><br><span class="line">plt.tight_layout()</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<h2 id="不规则布局">不规则布局</h2>
+<p><strong>用途</strong>：创建非均匀的子图布局</p>
+<p><strong>方法</strong>：matplotlib.gridspec.GridSpec</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">import</span> matplotlib.gridspec <span class="keyword">as</span> gridspec</span><br><span class="line">plt.rcParams[<span class="string">&#x27;font.sans-serif&#x27;</span>] = [<span class="string">&#x27;SimHei&#x27;</span>]  <span class="comment"># Windows 系统常用</span></span><br><span class="line">plt.rcParams[<span class="string">&#x27;axes.unicode_minus&#x27;</span>] = <span class="literal">False</span></span><br><span class="line"></span><br><span class="line">fig = plt.figure(figsize=(<span class="number">10</span>, <span class="number">6</span>))</span><br><span class="line">gs = gridspec.GridSpec(<span class="number">2</span>, <span class="number">3</span>)</span><br><span class="line"></span><br><span class="line">ax1 = fig.add_subplot(gs[<span class="number">0</span>, :<span class="number">2</span>])  <span class="comment"># 第一行，占前两列</span></span><br><span class="line">ax2 = fig.add_subplot(gs[<span class="number">0</span>, <span class="number">2</span>])   <span class="comment"># 第一行，第 3 列</span></span><br><span class="line">ax3 = fig.add_subplot(gs[<span class="number">1</span>, :])   <span class="comment"># 第二行，占全部</span></span><br><span class="line"></span><br><span class="line">x = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>]</span><br><span class="line">ax1.plot(x, [<span class="number">10</span>, <span class="number">20</span>, <span class="number">25</span>, <span class="number">30</span>], <span class="string">&#x27;b-&#x27;</span>)</span><br><span class="line">ax1.set_title(<span class="string">&#x27;大图&#x27;</span>)</span><br><span class="line">ax2.bar(x, [<span class="number">5</span>, <span class="number">15</span>, <span class="number">10</span>, <span class="number">20</span>], color=<span class="string">&#x27;orange&#x27;</span>)</span><br><span class="line">ax2.set_title(<span class="string">&#x27;小图&#x27;</span>)</span><br><span class="line">ax3.scatter(x, [<span class="number">15</span>, <span class="number">25</span>, <span class="number">20</span>, <span class="number">30</span>], color=<span class="string">&#x27;green&#x27;</span>)</span><br><span class="line">ax3.set_title(<span class="string">&#x27;底图&#x27;</span>)</span><br><span class="line"></span><br><span class="line">plt.tight_layout()</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<h2 id="总结">总结</h2>
+<table>
+<thead>
+<tr>
+<th>方式</th>
+<th>方法</th>
+<th>特点</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>放在一起</td>
+<td>plt.subplots()</td>
+<td>一次性创建，共享画布</td>
+<td>对比多个图表</td>
+</tr>
+<tr>
+<td>放在一起</td>
+<td>plt.subplot()</td>
+<td>逐个添加，灵活布局</td>
+<td>动态调整布局</td>
+</tr>
+<tr>
+<td>分开绘制</td>
+<td>plt.figure() + show()</td>
+<td>独立画布，单独显示</td>
+<td>独立查看或保存</td>
+</tr>
+<tr>
+<td>高级布局</td>
+<td>GridSpec</td>
+<td>不规则布局，高度自定义</td>
+<td>复杂布局需求</td>
+</tr>
+</tbody>
+</table>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="https://yukizzc.github.io">ZZC</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="https://yukizzc.github.io/2024/07/26/computer/matplotlib/">https://yukizzc.github.io/2024/07/26/computer/matplotlib/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/python/">python</a><a class="post-meta__tags" href="/tags/%E7%BB%98%E5%9B%BE/">绘图</a></div><div class="post-share"><div class="social-share" data-image="/images/%E6%9D%A8%E5%A8%81%E5%88%A9.jpg" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2024/07/26/computer/mysql/" title="mysql"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">Previous</div><div class="info-item-2">mysql</div></div><div class="info-2"><div class="info-item-1">安装配置 压缩包安装  下载 MySQL 压缩包并解压到指定目录（如 D:\mysql-8.0.x） 将 bin 目录添加到系统环境变量（D:\mysql-8.0.x\bin） 在 bin 目录下打开命令行，执行以下命令：  1234567891011121314# 初始化数据库（记录输出的初始密码）mysqld --initialize --console# 安装 MySQL 服务mysqld --install# 启动服务net start mysql# 登录（输入初始密码）mysql -u root -p# 修改密码（登录后执行）ALTER USER &#x27;root&#x27;@&#x27;localhost&#x27; IDENTIFIED BY &#x27;你的新密码&#x27;; SQL 命令 数据库操作 1234567891011-- 查看所有数据库SHOW DATABASES;-- 创建数据库CREATE DATABASE database_name;-- 使用数据库USE database_name;-- 删除数据库DROP DATABASE databa...</div></div></div></a><a class="pagination-related" href="/2024/07/26/computer/mongodb/" title="mongodb"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">Next</div><div class="info-item-2">mongodb</div></div><div class="info-2"><div class="info-item-1">安装配置 环境配置  下载 MongoDB 压缩包并解压到指定目录（如 D:\Program Files\MongoDB\Server\3.6） 将 bin 目录添加到系统环境变量：D:\Program Files\MongoDB\Server\3.6\bin  创建数据目录 在 D 盘根目录创建数据存储文件夹： 1D:\data\db （MongoDB 默认数据目录为 C:\data\db，自定义目录需在启动时指定） 启动服务 启动 MongoDB 服务 方式一：命令行启动 12345678# 启动服务（指定数据目录）mongod --dbpath D:\data\db# 指定端口（可选，默认 27017）mongod --dbpath D:\data\db --port 27017# 指定日志路径（可选）mongod --dbpath D:\data\db --logpath D:\data\log\mongodb.log 方式二：创建启动脚本 新建 start_mongo.bat 文件，内容如下： 1mongod --dbpath D:\data\db 双击即可启动服务。 ...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2024/07/26/computer/pyecharts/" title="pyecharts"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-07-26</div><div class="info-item-2">pyecharts</div></div><div class="info-2"><div class="info-item-1">官方资源    资源 链接     官方文档 pyecharts.org   中文简介/图库 gallery.pyecharts.org    快速入门 基本图表对象方法 123456789101112131415161718192021222324252627282930from pyecharts.charts import Barfrom pyecharts import options as optsfrom pyecharts.globals import ThemeTypedef chain_example():    &quot;&quot;&quot;链式调用（推荐）&quot;&quot;&quot;    bar = (        Bar()        .add_xaxis([&quot;衬衫&quot;, &quot;羊毛衫&quot;, &quot;雪纺衫&quot;, &quot;裤子&quot;, &quot;高跟鞋&quot;, &quot;袜子&quot;])        .add_yaxis(&quot;商家A&quot;, [5, 2...</div></div></div></a><a class="pagination-related" href="/2024/07/26/computer/python%E5%B9%B6%E5%8F%91%E5%BC%82%E6%AD%A5/" title="python并发异步"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-07-26</div><div class="info-item-2">python并发异步</div></div><div class="info-2"><div class="info-item-1">概要   多线程：threading，利用CPU和I/O可以同时执行的原理，让CPU不会干巴巴等待I/O完成   多进程：multiprocessing，利用多核CPU的能力，真正的并行执行任务   异步IO：asyncio，在单线程利用CPU和I/O同时执行的原理，实现函数异步执行   使用Lock对资源加锁，防止冲突访问   使用Queue实现不同线程/进程之间的数据通信，实现生产者-消费者模式   使用线程池Pool/进程池Pool，简化线程/进程的任务提交、等待结束、获取结果   使用subprocess启动外部程序的进程，并进行输入输出交互   CPU和I/O密集型区别  CPU密集型（CPU-bound）：  CPU密集型也叫计算密集型，是指I/O在很短的时间就可以完成，CPU需要大量的计算和处理，特点是CPU占用率相当高 例如：压缩解压缩、加密解密、正则表达式搜索  IO密集型（I/O bound）：  IO密集型指的是系统运作大部分的状况是CPU在等I/O (硬盘/内存) 的读/写操作，CPU占用率仍然较低。 例如：文件处理程序、网络爬虫程序、读写数据库程序 进程...</div></div></div></a><a class="pagination-related" href="/2026/04/02/computer/rust_python%E4%BA%92%E6%93%8D%E4%BD%9C/" title="rust_python互操作"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-04-02</div><div class="info-item-2">rust_python互操作</div></div><div class="info-2"><div class="info-item-1">FFI = Foreign Function Interface（外部函数接口） PyO3 是 Rust 生态中与 Python 交互的首选工具，核心特性：  双向调用：Rust 调用 Python，Python 调用 Rust 类型安全：编译时检查类型转换，避免运行时错误 零拷贝：支持直接内存访问，高性能数据传输 异步支持：与 async/await 无缝集成 GIL 管理：自动处理全局解释器锁，避免死锁  适用场景：  性能敏感模块用 Rust 重写 Python 调用现有 Rust 库 混合语言项目开发 计算密集型任务加速  Rust 编写 Python 动态库 环境配置 创建 lib 项目并配置 Cargo.toml： 12345678910111213141516[package]name = &quot;rust_core&quot;version = &quot;0.1.0&quot;edition = &quot;2021&quot;[lib]name = &quot;rust_core&quot;crate-type = [&quot;cdylib&quot;]...</div></div></div></a><a class="pagination-related" href="/2024/07/26/computer/numpy/" title="numpy"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-07-26</div><div class="info-item-2">numpy</div></div><div class="info-2"><div class="info-item-1">1import numpy as np 创建numpy 123a = np.array([1, 2, 3])b = np.array([[1,2,3],[4,5,6]])a.shape, b.shape 属性 1np.zeros((2,2)) 1np.ones((1,2)) 12# 单位矩阵np.eye(5) 12# 随机整数np.random.randint(low=2,high=5, size=(2, 4)) 12# 标准正太分布np.random.randn(2,4) 12# 0-1之间的随机，两种方法一样不过参数形式不一样，后者接受一个元组np.random.rand(2,4),np.random.random((2,4)) 12# 数列，最后一个参数是步长np.arange(0,10,2) 12# 切分num个数的数列np.linspace(start=0,stop=10,num=20,endpoint=False) 索引切片 12345# Create the following rank 2 array with shape (3, 4)# [[ 1  2  3  ...</div></div></div></a><a class="pagination-related" href="/2024/07/26/computer/mongodb/" title="mongodb"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-07-26</div><div class="info-item-2">mongodb</div></div><div class="info-2"><div class="info-item-1">安装配置 环境配置  下载 MongoDB 压缩包并解压到指定目录（如 D:\Program Files\MongoDB\Server\3.6） 将 bin 目录添加到系统环境变量：D:\Program Files\MongoDB\Server\3.6\bin  创建数据目录 在 D 盘根目录创建数据存储文件夹： 1D:\data\db （MongoDB 默认数据目录为 C:\data\db，自定义目录需在启动时指定） 启动服务 启动 MongoDB 服务 方式一：命令行启动 12345678# 启动服务（指定数据目录）mongod --dbpath D:\data\db# 指定端口（可选，默认 27017）mongod --dbpath D:\data\db --port 27017# 指定日志路径（可选）mongod --dbpath D:\data\db --logpath D:\data\log\mongodb.log 方式二：创建启动脚本 新建 start_mongo.bat 文件，内容如下： 1mongod --dbpath D:\data\db 双击即可启动服务。 ...</div></div></div></a><a class="pagination-related" href="/2024/07/26/computer/redis/" title="redis"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-07-26</div><div class="info-item-2">redis</div></div><div class="info-2"><div class="info-item-1">安装 参考教程：Redis 安装 | 菜鸟教程 (runoob.com) redis官方没有windows版本，所以从这个第三方下载https://github.com/tporadowski/redis/releases 下载zip压缩包然后解压开来，双击redis-server.exe就是启动服务了（默认设置） 如果要启用服务运行时使用的配置文件，用下面代码执行 1.\redis-server.exe redis.windows.conf 注意：服务运行的窗口要留着 客户端：https://github.com/qishibo/AnotherRedisDesktopManager，一款开源可视化管理工具 Docker下安装 windows版本太老了，redis本身是只有linux的所以可以考虑用docker搭建服务方法如下 一、编写file文件 123FROM redis:7.4-rc1-alpine3.20COPY redis.conf /usr/local/etc/redis/redis.confCMD [ &quot;redis-server&quot;, &quot;...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/images/%E6%9D%A8%E5%A8%81%E5%88%A9.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ZZC</div><div class="author-info-description">计算机和金融方面的学习笔记，也会写一些个人随笔和诗歌</div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">59</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">28</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">5</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://gitee.com/yukizzc"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">属性</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BA%BF%E6%9D%A1%E7%9B%B8%E5%85%B3%E5%B1%9E%E6%80%A7"><span class="toc-number">1.1.</span> <span class="toc-text">线条相关属性</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9D%90%E6%A0%87%E8%BD%B4%E7%9B%B8%E5%85%B3%E5%B1%9E%E6%80%A7"><span class="toc-number">1.2.</span> <span class="toc-text">坐标轴相关属性</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B0%83%E6%95%B4%E5%9D%90%E6%A0%87%E8%BD%B4%E7%BA%BF%E5%AE%BD%E5%BA%A6%EF%BC%88Spines%EF%BC%89"><span class="toc-number">1.3.</span> <span class="toc-text">调整坐标轴线宽度（Spines）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%BB%E5%BA%A6%E6%98%BE%E7%A4%BA%E6%95%B0%E9%87%8F%E5%92%8C%E6%A0%B7%E5%BC%8F"><span class="toc-number">1.4.</span> <span class="toc-text">刻度显示数量和样式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BD%91%E6%A0%BC%E7%BA%BF"><span class="toc-number">1.5.</span> <span class="toc-text">网格线</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%BE%E8%A1%A8%E6%95%B4%E4%BD%93%E6%A0%B7%E5%BC%8F"><span class="toc-number">1.6.</span> <span class="toc-text">图表整体样式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B6%E4%BB%96%E5%B8%B8%E7%94%A8%E5%B1%9E%E6%80%A7"><span class="toc-number">1.7.</span> <span class="toc-text">其他常用属性</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%AD%E6%96%87%E5%AD%97%E4%BD%93"><span class="toc-number">1.8.</span> <span class="toc-text">中文字体</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">2.</span> <span class="toc-text">常用图表</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%98%E7%BA%BF%E5%9B%BE"><span class="toc-number">2.1.</span> <span class="toc-text">折线图</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%A3%E7%82%B9%E5%9B%BE"><span class="toc-number">2.2.</span> <span class="toc-text">散点图</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%B1%E7%8A%B6%E5%9B%BE"><span class="toc-number">2.3.</span> <span class="toc-text">柱状图</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%B4%E6%96%B9%E5%9B%BE"><span class="toc-number">2.4.</span> <span class="toc-text">直方图</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A5%BC%E5%9B%BE"><span class="toc-number">2.5.</span> <span class="toc-text">饼图</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%A2%E7%A7%AF%E5%9B%BE"><span class="toc-number">2.6.</span> <span class="toc-text">面积图</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%B1%E7%BA%BF%E5%9B%BE"><span class="toc-number">2.7.</span> <span class="toc-text">箱线图</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%83%AD%E5%8A%9B%E5%9B%BE"><span class="toc-number">2.8.</span> <span class="toc-text">热力图</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">3.</span> <span class="toc-text">多图组合</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%A0%E5%8A%A0%E5%9B%BE%E5%BD%A2"><span class="toc-number">3.1.</span> <span class="toc-text">叠加图形</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B1%E4%BA%AB%E7%94%BB%E5%B8%83"><span class="toc-number">3.2.</span> <span class="toc-text">共享画布</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%8B%AC%E7%AB%8B%E7%94%BB%E5%B8%83"><span class="toc-number">3.3.</span> <span class="toc-text">独立画布</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B1%E4%BA%AB%E5%9D%90%E6%A0%87%E8%BD%B4"><span class="toc-number">3.4.</span> <span class="toc-text">共享坐标轴</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%8D%E8%A7%84%E5%88%99%E5%B8%83%E5%B1%80"><span class="toc-number">3.5.</span> <span class="toc-text">不规则布局</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">3.6.</span> <span class="toc-text">总结</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/12/31/essay/2026/" title="2026">2026</a><time datetime="2026-12-30T16:00:00.000Z" title="Created 2026-12-31 00:00:00">2026-12-31</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/04/22/computer/rocket/" title="rocket">rocket</a><time datetime="2026-04-21T16:00:00.000Z" title="Created 2026-04-22 00:00:00">2026-04-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/04/22/computer/rust%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/" title="rust网络编程">rust网络编程</a><time datetime="2026-04-21T16:00:00.000Z" title="Created 2026-04-22 00:00:00">2026-04-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/04/02/computer/rust_python%E4%BA%92%E6%93%8D%E4%BD%9C/" title="rust_python互操作">rust_python互操作</a><time datetime="2026-04-01T16:00:00.000Z" title="Created 2026-04-02 00:00:00">2026-04-02</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/04/02/computer/rust%E5%A4%9A%E7%BA%BF%E7%A8%8B/" title="rust多线程">rust多线程</a><time datetime="2026-04-01T16:00:00.000Z" title="Created 2026-04-02 00:00:00">2026-04-02</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By ZZC</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(async () => {
+  const showKatex = () => {
+    document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
+  }
+
+  if (!window.katex_js_css) {
+    window.katex_js_css = true
+    await btf.getCSS('https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/katex.min.css')
+    if (false) {
+      await btf.getScript('https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/contrib/copy-tex.min.js')
+    }
+  }
+
+  showKatex()
+})()</script><script>(() => {
+  const parseViewBox = viewBox => {
+    if (!viewBox) return null
+    const parts = viewBox.trim().split(/[\s,]+/).map(n => Number(n))
+    if (parts.length !== 4 || parts.some(n => Number.isNaN(n))) return null
+    return parts
+  }
+
+  const getSvgViewBox = svg => {
+    const attr = parseViewBox(svg.getAttribute('viewBox'))
+    if (attr) return attr
+
+    // Fallback: use bbox to build a viewBox
+    try {
+      const bbox = svg.getBBox()
+      if (bbox && bbox.width && bbox.height) return [bbox.x, bbox.y, bbox.width, bbox.height]
+    } catch (e) {
+      // getBBox may fail on some edge cases; ignore
+    }
+
+    const w = Number(svg.getAttribute('width')) || 0
+    const h = Number(svg.getAttribute('height')) || 0
+    if (w > 0 && h > 0) return [0, 0, w, h]
+    return [0, 0, 100, 100]
+  }
+
+  const setSvgViewBox = (svg, vb) => {
+    svg.setAttribute('viewBox', `${vb[0]} ${vb[1]} ${vb[2]} ${vb[3]}`)
+  }
+
+  const clamp = (v, min, max) => Math.max(min, Math.min(max, v))
+
+  const openSvgInNewTab = ({ source, initViewBox }) => {
+    const getClonedSvg = () => {
+      if (typeof source === 'string') {
+        const template = document.createElement('template')
+        template.innerHTML = source.trim()
+        const svg = template.content.querySelector('svg')
+        return svg ? svg.cloneNode(true) : null
+      }
+      if (source && typeof source.cloneNode === 'function') {
+        return source.cloneNode(true)
+      }
+      return null
+    }
+
+    const clone = getClonedSvg()
+    if (!clone) return
+    if (initViewBox && initViewBox.length === 4) {
+      clone.setAttribute('viewBox', initViewBox.join(' '))
+    }
+    if (!clone.getAttribute('xmlns')) clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+    if (!clone.getAttribute('xmlns:xlink') && clone.outerHTML.includes('xlink:')) {
+      clone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink')
+    }
+    // inject background to match current theme
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
+    const bg = getComputedStyle(document.body).backgroundColor || (isDark ? '#1e1e1e' : '#ffffff')
+    if (!clone.style.background) clone.style.background = bg
+
+    const serializer = new XMLSerializer()
+    const svgSource = serializer.serializeToString(clone)
+    const htmlSource = `<!doctype html><html><head><meta charset="utf-8" />
+      <style>
+        html, body { width: 100%; height: 100%; margin: 0; display: flex; align-items: center; justify-content: center; background: ${bg}; }
+        svg { max-width: 100%; max-height: 100%; height: auto; width: auto; }
+      </style>
+      </head><body>${svgSource}</body></html>`
+    const blob = new Blob([htmlSource], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank', 'noopener')
+    setTimeout(() => URL.revokeObjectURL(url), 30000)
+  }
+
+  const attachMermaidViewerButton = wrap => {
+    let btn = wrap.querySelector('.mermaid-open-btn')
+    if (!btn) {
+      btn = document.createElement('button')
+      btn.type = 'button'
+      btn.className = 'mermaid-open-btn'
+      wrap.appendChild(btn)
+    }
+
+    btn.innerHTML = '<i class="fa fa-search fa-fw" aria-hidden="true"></i>'
+
+    if (!btn.__mermaidViewerBound) {
+      btn.addEventListener('click', e => {
+        e.preventDefault()
+        e.stopPropagation()
+        const svg = wrap.__mermaidOriginalSvg || wrap.querySelector('svg')
+        if (!svg) return
+        const initViewBox = wrap.__mermaidInitViewBox
+        if (typeof svg === 'string') {
+          openSvgInNewTab({ source: svg, initViewBox })
+          return
+        }
+        openSvgInNewTab({ source: svg, initViewBox })
+      })
+      btn.__mermaidViewerBound = true
+    }
+  }
+
+  // Zoom around a point (px, py) in the SVG viewport (in viewBox coordinates)
+  const zoomAtPoint = (vb, factor, px, py) => {
+    const w = vb[2] * factor
+    const h = vb[3] * factor
+    const nx = px - (px - vb[0]) * factor
+    const ny = py - (py - vb[1]) * factor
+    return [nx, ny, w, h]
+  }
+
+  const initMermaidGestures = wrap => {
+    const svg = wrap.querySelector('svg')
+    if (!svg) return
+
+    // Ensure viewBox exists so gestures always work
+    const initVb = getSvgViewBox(svg)
+    wrap.__mermaidInitViewBox = initVb
+    wrap.__mermaidCurViewBox = initVb.slice()
+    setSvgViewBox(svg, initVb)
+
+    // Avoid binding multiple times on themeChange/pjax
+    if (wrap.__mermaidGestureBound) return
+    wrap.__mermaidGestureBound = true
+
+    // Helper: map client (viewport) coordinate -> viewBox coordinate
+    const clientToViewBox = (clientX, clientY) => {
+      const rect = svg.getBoundingClientRect()
+      const vb = wrap.__mermaidCurViewBox || getSvgViewBox(svg)
+      const x = vb[0] + (clientX - rect.left) * (vb[2] / rect.width)
+      const y = vb[1] + (clientY - rect.top) * (vb[3] / rect.height)
+      return { x, y, rect, vb }
+    }
+
+    const state = {
+      pointers: new Map(),
+      startVb: null,
+      startDist: 0,
+      startCenter: null
+    }
+
+    const clampVb = vb => {
+      const init = wrap.__mermaidInitViewBox || vb
+      const minW = init[2] * 0.1
+      const maxW = init[2] * 10
+      const minH = init[3] * 0.1
+      const maxH = init[3] * 10
+      vb[2] = clamp(vb[2], minW, maxW)
+      vb[3] = clamp(vb[3], minH, maxH)
+      return vb
+    }
+
+    const setCurVb = vb => {
+      vb = clampVb(vb)
+      wrap.__mermaidCurViewBox = vb
+      setSvgViewBox(svg, vb)
+    }
+
+    const onPointerDown = e => {
+      // Allow only primary button for mouse
+      if (e.pointerType === 'mouse' && e.button !== 0) return
+      svg.setPointerCapture(e.pointerId)
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+      if (state.pointers.size === 1) {
+        state.startVb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+      } else if (state.pointers.size === 2) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        state.startDist = Math.hypot(dx, dy)
+        state.startVb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+        state.startCenter = { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 }
+      }
+    }
+
+    const onPointerMove = e => {
+      if (!state.pointers.has(e.pointerId)) return
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+      // Pan with 1 pointer
+      if (state.pointers.size === 1 && state.startVb) {
+        const p = [...state.pointers.values()][0]
+        const prev = { x: e.clientX - e.movementX, y: e.clientY - e.movementY }
+        // movementX/Y unreliable on touch, compute from stored last position
+        const last = wrap.__mermaidLastSinglePointer || p
+        const dxClient = p.x - last.x
+        const dyClient = p.y - last.y
+        wrap.__mermaidLastSinglePointer = p
+
+        const { rect } = clientToViewBox(p.x, p.y)
+        const vb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+        const dx = dxClient * (vb[2] / rect.width)
+        const dy = dyClient * (vb[3] / rect.height)
+        setCurVb([vb[0] - dx, vb[1] - dy, vb[2], vb[3]])
+        return
+      }
+
+      // Pinch zoom with 2 pointers
+      if (state.pointers.size === 2 && state.startVb && state.startDist > 0) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        const dist = Math.hypot(dx, dy)
+        if (!dist) return
+        const factor = state.startDist / dist // dist bigger => zoom in (viewBox smaller)
+
+        const cx = (pts[0].x + pts[1].x) / 2
+        const cy = (pts[0].y + pts[1].y) / 2
+        const centerClient = { x: cx, y: cy }
+
+        const pxy = clientToViewBox(centerClient.x, centerClient.y)
+        const cpx = pxy.x
+        const cpy = pxy.y
+
+        const vb = zoomAtPoint(state.startVb, factor, cpx, cpy)
+        setCurVb(vb)
+      }
+    }
+
+    const onPointerUpOrCancel = e => {
+      state.pointers.delete(e.pointerId)
+      if (state.pointers.size === 0) {
+        state.startVb = null
+        state.startDist = 0
+        state.startCenter = null
+        wrap.__mermaidLastSinglePointer = null
+      } else if (state.pointers.size === 1) {
+        // reset single pointer baseline to avoid jump
+        wrap.__mermaidLastSinglePointer = [...state.pointers.values()][0]
+      }
+    }
+
+    // Wheel zoom (mouse/trackpad)
+    const onWheel = e => {
+      // ctrlKey on mac trackpad pinch; we treat both as zoom
+      e.preventDefault()
+      const delta = e.deltaY
+      const zoomFactor = delta > 0 ? 1.1 : 0.9
+      const { x, y } = clientToViewBox(e.clientX, e.clientY)
+      const vb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+      setCurVb(zoomAtPoint(vb, zoomFactor, x, y))
+    }
+
+    const onDblClick = () => {
+      const init = wrap.__mermaidInitViewBox
+      if (!init) return
+      wrap.__mermaidCurViewBox = init.slice()
+      setSvgViewBox(svg, init)
+    }
+
+    svg.addEventListener('pointerdown', onPointerDown)
+    svg.addEventListener('pointermove', onPointerMove)
+    svg.addEventListener('pointerup', onPointerUpOrCancel)
+    svg.addEventListener('pointercancel', onPointerUpOrCancel)
+    svg.addEventListener('wheel', onWheel, { passive: false })
+    svg.addEventListener('dblclick', onDblClick)
+  }
+
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+
+      // Clear old render (themeChange/pjax will rerun)
+      const oldSvg = item.querySelector('svg')
+      if (oldSvg) oldSvg.remove()
+      item.__mermaidGestureBound = false
+
+      const config = mermaidSrc.dataset.config ? JSON.parse(mermaidSrc.dataset.config) : {}
+      if (!config.theme) {
+        config.theme = theme
+      }
+      const mermaidThemeConfig = `%%{init: ${JSON.stringify(config)}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+        if (true) initMermaidGestures(item)
+        item.__mermaidOriginalSvg = svg
+        if (true) attachMermaidViewerButton(item)
+      }
+
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.12.2/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">Search</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  Loading Database</span></div><div class="local-search-input"><input placeholder="searching..." type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.5.4"></script></div></div></body></html>

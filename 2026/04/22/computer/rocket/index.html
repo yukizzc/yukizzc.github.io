@@ -1,0 +1,884 @@
+<!DOCTYPE html><html lang="zh-C" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>rocket | Z</title><meta name="author" content="ZZC"><meta name="copyright" content="ZZC"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="框架概述 Rocket 是 Rust 生态中最成熟、最易用的 Web 框架之一。它的设计理念是：让编写安全、高效的 Web 应用变得简单愉快。 与传统的 Web 框架不同，Rocket 充分利用了 Rust 的所有权系统和类型系统，能在编译时就发现很多潜在的错误。比如，你永远不会在路由函数中收到错误类型的参数，因为编译器会强制检查。    特性 Rocket的实现 带来的好处     声明式路由">
+<meta property="og:type" content="article">
+<meta property="og:title" content="rocket">
+<meta property="og:url" content="https://yukizzc.github.io/2026/04/22/computer/rocket/index.html">
+<meta property="og:site_name" content="Z">
+<meta property="og:description" content="框架概述 Rocket 是 Rust 生态中最成熟、最易用的 Web 框架之一。它的设计理念是：让编写安全、高效的 Web 应用变得简单愉快。 与传统的 Web 框架不同，Rocket 充分利用了 Rust 的所有权系统和类型系统，能在编译时就发现很多潜在的错误。比如，你永远不会在路由函数中收到错误类型的参数，因为编译器会强制检查。    特性 Rocket的实现 带来的好处     声明式路由">
+<meta property="og:locale">
+<meta property="og:image" content="https://yukizzc.github.io/images/%E6%9D%A8%E5%A8%81%E5%88%A9.jpg">
+<meta property="article:published_time" content="2026-04-21T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-04-03T07:38:09.180Z">
+<meta property="article:author" content="ZZC">
+<meta property="article:tag" content="web">
+<meta property="article:tag" content="rust">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://yukizzc.github.io/images/%E6%9D%A8%E5%A8%81%E5%88%A9.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "rocket",
+  "url": "https://yukizzc.github.io/2026/04/22/computer/rocket/",
+  "image": "https://yukizzc.github.io/images/%E6%9D%A8%E5%A8%81%E5%88%A9.jpg",
+  "datePublished": "2026-04-21T16:00:00.000Z",
+  "dateModified": "2026-04-03T07:38:09.180Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "ZZC",
+      "url": "https://yukizzc.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://yukizzc.github.io/2026/04/22/computer/rocket/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"No results found for: ${query}","hits_stats":"${hits} articles found"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":true,"highlightMacStyle":true},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'rocket',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="bg-animation" id="web_bg" style="background-color: #E8F4F8;"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/images/%E6%9D%A8%E5%A8%81%E5%88%A9.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">59</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">28</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">5</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><span class="site-page group"><span> 分类</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/categories/finance/"><i class="fa-fw fas fa-chart-line"></i><span> 金融</span></a></li><li><a class="site-page child" href="/categories/computer/"><i class="fa-fw fas fa-code"></i><span> 计算机</span></a></li><li><a class="site-page child" href="/categories/essay/"><i class="fa-fw fas fa-heart"></i><span> 随文</span></a></li><li><a class="site-page child" href="/categories/mathematical/"><i class="fa-fw fas fa-atom"></i><span> 数理</span></a></li><li><a class="site-page child" href="/categories/misc/"><i class="fa-fw fas fa-comment-dots"></i><span> 其他</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-calendar-alt"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg fixed" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Z</span></a><a class="nav-page-title" href="/"><span class="site-name">rocket</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  Back to Home</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> Search</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><span class="site-page group"><span> 分类</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/categories/finance/"><i class="fa-fw fas fa-chart-line"></i><span> 金融</span></a></li><li><a class="site-page child" href="/categories/computer/"><i class="fa-fw fas fa-code"></i><span> 计算机</span></a></li><li><a class="site-page child" href="/categories/essay/"><i class="fa-fw fas fa-heart"></i><span> 随文</span></a></li><li><a class="site-page child" href="/categories/mathematical/"><i class="fa-fw fas fa-atom"></i><span> 数理</span></a></li><li><a class="site-page child" href="/categories/misc/"><i class="fa-fw fas fa-comment-dots"></i><span> 其他</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-calendar-alt"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">rocket</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2026-04-21T16:00:00.000Z" title="Created 2026-04-22 00:00:00">2026-04-22</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2026-04-03T07:38:09.180Z" title="Updated 2026-04-03 15:38:09">2026-04-03</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/computer/">computer</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1>框架概述</h1>
+<p><strong>Rocket</strong> 是 Rust 生态中最成熟、最易用的 Web 框架之一。它的设计理念是：<strong>让编写安全、高效的 Web 应用变得简单愉快</strong>。</p>
+<p>与传统的 Web 框架不同，Rocket 充分利用了 Rust 的所有权系统和类型系统，能在<strong>编译时</strong>就发现很多潜在的错误。比如，你永远不会在路由函数中收到错误类型的参数，因为编译器会强制检查。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">特性</th>
+<th style="text-align:left">Rocket的实现</th>
+<th style="text-align:left">带来的好处</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>声明式路由</strong></td>
+<td style="text-align:left">使用属性宏 <code>#[get(&quot;/&quot;)]</code></td>
+<td style="text-align:left">路由与处理函数绑定清晰，易于维护</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>类型安全的参数提取</strong></td>
+<td style="text-align:left">参数类型自动转换</td>
+<td style="text-align:left">编译时保证类型正确，避免运行时错误</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>请求守卫</strong></td>
+<td style="text-align:left">实现了 <code>FromRequest</code> 的类型</td>
+<td style="text-align:left">自动验证和提取请求数据，减少样板代码</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>响应器</strong></td>
+<td style="text-align:left">实现了 <code>Responder</code> 的类型</td>
+<td style="text-align:left">灵活控制响应格式和状态码</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>中间件系统</strong></td>
+<td style="text-align:left">Fairing（整流罩）</td>
+<td style="text-align:left">可在请求生命周期多个阶段插入逻辑</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Rocket的工作流程</strong></p>
+<p><img src="/img/rocket.svg" alt=""></p>
+<p><strong>开发者只需要关注「业务逻辑」和「请求守卫」，其余都由 Rocket 自动完成。</strong></p>
+<h1>快速开始</h1>
+<h2 id="创建项目">创建项目</h2>
+<p>首先创建一个新的 Rust 项目：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cargo new my_rocket_app</span><br><span class="line"><span class="built_in">cd</span> my_rocket_app</span><br></pre></td></tr></table></figure>
+<p>这个命令会生成一个标准的 Rust 项目结构：</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">my_rocket_app/</span><br><span class="line">├── Cargo<span class="selector-class">.toml</span>      # 依赖配置文件</span><br><span class="line">└── <span class="attribute">src</span>/</span><br><span class="line">    └── <span class="selector-tag">main</span><span class="selector-class">.rs</span>     # 入口文件</span><br></pre></td></tr></table></figure>
+<h2 id="添加依赖">添加依赖</h2>
+<p>编辑 <code>Cargo.toml</code>，添加 Rocket 核心依赖：</p>
+<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[dependencies]</span></span><br><span class="line"><span class="attr">rocket</span> = <span class="string">&quot;0.5.1&quot;</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>注意</strong>：如果你需要 <code>JSON</code> 支持，可以开启 <code>json</code> 特性：<code>rocket = &#123; version = &quot;0.5.1&quot;, features = [&quot;json&quot;] &#125;</code></p>
+</blockquote>
+<h2 id="第一个Rocket程序">第一个Rocket程序</h2>
+<p>创建 <code>src/main.rs</code>，写入以下代码：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#[macro_use]</span> <span class="keyword">extern</span> <span class="keyword">crate</span> rocket;  <span class="comment">// 导入 Rocket 的宏</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 定义一个处理 GET 请求的路由</span></span><br><span class="line"><span class="meta">#[get(<span class="string">&quot;/&quot;</span>)]</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">index</span>() <span class="punctuation">-&gt;</span> &amp;<span class="symbol">&#x27;static</span> <span class="type">str</span> &#123;</span><br><span class="line">    <span class="string">&quot;Hello, Rocket!&quot;</span>  <span class="comment">// 返回字符串,Rocket 会自动包装成 HTTP 响应</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 启动函数,Rocket 会在这里初始化并运行服务器</span></span><br><span class="line"><span class="meta">#[launch]</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">rocket</span>() <span class="punctuation">-&gt;</span> _ &#123;</span><br><span class="line">    rocket::<span class="title function_ invoke__">build</span>()           <span class="comment">// 创建 Rocket 实例</span></span><br><span class="line">        .<span class="title function_ invoke__">mount</span>(<span class="string">&quot;/&quot;</span>, routes![index])  <span class="comment">// 将路由挂载到根路径</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>代码解释</strong>：</p>
+<ul>
+<li><code>#[macro_use] extern crate rocket</code>：让 Rocket 的宏（如 <code>#[get]</code>、<code>#[launch]</code>）在当前文件中可用</li>
+<li><code>#[get(&quot;/&quot;)]</code>：属性宏，标记函数处理根路径的 GET 请求</li>
+<li><code>#[launch]</code>：启动宏，Rocket 会自动创建异步运行时并启动服务器</li>
+<li><code>mount(&quot;/&quot;, routes![index])</code>：将路由 <code>index</code> 挂载到 <code>/</code> 路径下</li>
+</ul>
+<h2 id="运行和测试">运行和测试</h2>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cargo run</span><br></pre></td></tr></table></figure>
+<p>看到以下输出表示启动成功：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">🔧 Configured <span class="keyword">for</span> development.</span><br><span class="line">   &gt;&gt; address: 127.0.0.1</span><br><span class="line">   &gt;&gt; port: 8000</span><br><span class="line">   &gt;&gt; workers: 8</span><br><span class="line">🚀 Rocket has launched from http://127.0.0.1:8000</span><br></pre></td></tr></table></figure>
+<p>打开浏览器访问 <code>http://localhost:8000</code>，你会看到 “Hello, Rocket!”。</p>
+<h1>路由系统</h1>
+<p>路由是 Web 框架的核心——它决定了&quot;哪个 URL 由哪个函数处理&quot;。</p>
+<h2 id="HTTP方法绑定">HTTP方法绑定</h2>
+<p>Rocket 为每个 HTTP 方法都提供了对应的宏：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#[get(<span class="string">&quot;/&quot;</span>)]</span>      <span class="comment">// 处理 GET 请求</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">get_handler</span>() <span class="punctuation">-&gt;</span> &amp;<span class="symbol">&#x27;static</span> <span class="type">str</span> &#123; <span class="string">&quot;GET request&quot;</span> &#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#[post(<span class="string">&quot;/&quot;</span>)]</span>     <span class="comment">// 处理 POST 请求</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">post_handler</span>() <span class="punctuation">-&gt;</span> &amp;<span class="symbol">&#x27;static</span> <span class="type">str</span> &#123; <span class="string">&quot;POST request&quot;</span> &#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#[put(<span class="string">&quot;/&quot;</span>)]</span>      <span class="comment">// 处理 PUT 请求(更新资源)</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">put_handler</span>() <span class="punctuation">-&gt;</span> &amp;<span class="symbol">&#x27;static</span> <span class="type">str</span> &#123; <span class="string">&quot;PUT request&quot;</span> &#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#[delete(<span class="string">&quot;/&quot;</span>)]</span>   <span class="comment">// 处理 DELETE 请求(删除资源)</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">delete_handler</span>() <span class="punctuation">-&gt;</span> &amp;<span class="symbol">&#x27;static</span> <span class="type">str</span> &#123; <span class="string">&quot;DELETE request&quot;</span> &#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#[patch(<span class="string">&quot;/&quot;</span>)]</span>    <span class="comment">// 处理 PATCH 请求(部分更新)</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">patch_handler</span>() <span class="punctuation">-&gt;</span> &amp;<span class="symbol">&#x27;static</span> <span class="type">str</span> &#123; <span class="string">&quot;PATCH request&quot;</span> &#125;</span><br></pre></td></tr></table></figure>
+<p><strong>设计理念</strong>：<code>RESTful API</code> 通常遵循&quot;用 HTTP 方法表达操作意图&quot;的原则：</p>
+<ul>
+<li>GET：获取资源（不应该修改数据）</li>
+<li>POST：创建新资源</li>
+<li>PUT：完整替换资源</li>
+<li>PATCH：部分更新资源</li>
+<li>DELETE：删除资源</li>
+</ul>
+<h2 id="动态路径参数">动态路径参数</h2>
+<p>URL 中经常包含可变的部分，例如 <code>/users/123</code> 中的 <code>123</code> 代表用户 ID。Rocket 使用 <code>&lt;name&gt;</code> 语法来捕获这些动态部分，并<strong>自动转换为你指定的类型</strong>。</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 捕获单个参数</span></span><br><span class="line"><span class="meta">#[get(<span class="string">&quot;/users/&lt;id&gt;&quot;</span>)]</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">get_user</span>(id: <span class="type">u32</span>) <span class="punctuation">-&gt;</span> <span class="type">String</span> &#123;</span><br><span class="line">    <span class="comment">// id 会自动从字符串 &quot;123&quot; 转换为 u32 类型</span></span><br><span class="line">    <span class="comment">// 如果转换失败(比如访问 /users/abc),Rocket 会自动返回 404</span></span><br><span class="line">    <span class="built_in">format!</span>(<span class="string">&quot;查看用户 ID: &#123;&#125;&quot;</span>, id)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 捕获多个参数</span></span><br><span class="line"><span class="meta">#[get(<span class="string">&quot;/posts/&lt;year&gt;/&lt;month&gt;&quot;</span>)]</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">get_post</span>(year: <span class="type">u32</span>, month: <span class="type">u32</span>) <span class="punctuation">-&gt;</span> <span class="type">String</span> &#123;</span><br><span class="line">    format(<span class="string">&quot;查看 &#123;&#125;-&#123;&#125; 月的帖子&quot;</span>, year, month)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 访问示例：</span></span><br><span class="line"><span class="comment">// GET /users/42      → &quot;查看用户 ID: 42&quot;</span></span><br><span class="line"><span class="comment">// GET /posts/2024/12 → &quot;查看 2024-12 月的帖子&quot;</span></span><br></pre></td></tr></table></figure>
+<p><strong>重要</strong>：Rocket 支持多种类型自动转换，包括：</p>
+<ul>
+<li>整数类型：<code>u8</code>, <code>u32</code>, <code>i32</code>, <code>usize</code> 等</li>
+<li>浮点类型：<code>f32</code>, <code>f64</code></li>
+<li>字符串：<code>String</code>, <code>&amp;str</code></li>
+<li>UUID：<code>uuid::Uuid</code></li>
+<li>路径：<code>PathBuf</code>（捕获 <code>/users/a/b/c</code> 这样的多段路径）</li>
+</ul>
+<h2 id="查询参数">查询参数</h2>
+<p>查询参数是 URL 中 <code>?</code> 后面的部分，如 <code>/search?q=rust&amp;limit=10</code>：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#[get(<span class="string">&quot;/search?&lt;q&gt;&amp;&lt;limit&gt;&quot;</span>)]</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">search</span>(q: <span class="type">String</span>, limit: <span class="type">Option</span>&lt;<span class="type">u32</span>&gt;) <span class="punctuation">-&gt;</span> <span class="type">String</span> &#123;</span><br><span class="line">    <span class="comment">// Option 类型表示参数可能不存在</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">limit</span> = limit.<span class="title function_ invoke__">unwrap_or</span>(<span class="number">10</span>);  <span class="comment">// 没有 limit 参数时默认 10</span></span><br><span class="line">    <span class="built_in">format!</span>(<span class="string">&quot;搜索 &#x27;&#123;&#125;&#x27;,限制 &#123;&#125; 条结果&quot;</span>, q, limit)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 访问示例：</span></span><br><span class="line"><span class="comment">// GET /search?q=hello&amp;limit=5    → &quot;搜索 &#x27;hello&#x27;,限制 5 条结果&quot;</span></span><br><span class="line"><span class="comment">// GET /search?q=hello            → &quot;搜索 &#x27;hello&#x27;,限制 10 条结果&quot;</span></span><br></pre></td></tr></table></figure>
+<p><strong>为什么用 Option</strong>？因为查询参数是可选的。Rocket 会：</p>
+<ul>
+<li>如果参数存在且类型匹配，提取值</li>
+<li>如果参数不存在，传入 <code>None</code></li>
+<li>如果参数存在但类型不匹配（如 <code>limit=abc</code>），返回 400 错误</li>
+</ul>
+<p><strong>注意：<code>?</code> 是分界线，左边是路径参数，右边全是查询参数，两者永不交叉</strong></p>
+<h2 id="路由优先级">路由优先级</h2>
+<p>当多个路由可能匹配同一个 URL 时，Rocket 采用&quot;<strong>最具体优先</strong>&quot;原则：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#[get(<span class="string">&quot;/users/all&quot;</span>)]</span>      <span class="comment">// ① 固定路径 - 最具体</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">users_all</span>() &#123; &#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#[get(<span class="string">&quot;/users/&lt;id&gt;&quot;</span>)]</span>      <span class="comment">// ② 动态参数 - 较具体</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">user_by_id</span>(id: <span class="type">u32</span>) &#123; &#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#[get(<span class="string">&quot;/users/&lt;path..&gt;&quot;</span>)]</span>  <span class="comment">// ③ 通配符 - 最不具体</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">users_path</span>(path: PathBuf) &#123; &#125;</span><br></pre></td></tr></table></figure>
+<p>当访问 <code>/users/all</code> 时：</p>
+<ul>
+<li>① 完全匹配 → 选中</li>
+<li>② 也会匹配（因为 <code>all</code> 可以被当作 id），但因为①更具体，所以优先</li>
+</ul>
+<p>当访问 <code>/users/123</code> 时：</p>
+<ul>
+<li>① 不匹配（路径是 <code>/users/all</code> 才对）</li>
+<li>② 匹配（<code>123</code> 是有效的 u32）→ 选中</li>
+<li>③ 也匹配，但②更具体</li>
+</ul>
+<p><strong>手动指定优先级</strong>：当默认规则不够用时，用 <code>rank</code> 参数：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#[get(<span class="string">&quot;/items/&lt;id&gt;&quot;</span>, rank = 1)]</span>    <span class="comment">// 数字越小优先级越高</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">by_id</span>(id: <span class="type">u32</span>) <span class="punctuation">-&gt;</span> <span class="type">String</span> &#123;</span><br><span class="line">    <span class="built_in">format!</span>(<span class="string">&quot;ID查询: &#123;&#125;&quot;</span>, id)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#[get(<span class="string">&quot;/items/&lt;name&gt;&quot;</span>, rank = 2)]</span>  <span class="comment">// 优先级较低</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">by_name</span>(name: <span class="type">String</span>) <span class="punctuation">-&gt;</span> <span class="type">String</span> &#123;</span><br><span class="line">    <span class="built_in">format!</span>(<span class="string">&quot;名称查询: &#123;&#125;&quot;</span>, name)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 访问 /items/123 → 优先匹配 by_id</span></span><br><span class="line"><span class="comment">// 访问 /items/abc → 跳过 by_id(类型转换失败),匹配 by_name</span></span><br></pre></td></tr></table></figure>
+<h1>请求处理</h1>
+<p>Rocket 应用启动后，根据请求类型选择不同的测试方式：</p>
+<ul>
+<li><strong>GET 请求</strong>：直接在浏览器访问即可，例如 <code>http://localhost:8000/users/123</code></li>
+<li><strong>POST/PUT/DELETE 等请求</strong>：浏览器无法直接测试，需借助工具：
+<ul>
+<li>Python 脚本（推荐）</li>
+<li>Postman</li>
+<li>curl 命令</li>
+</ul>
+</li>
+</ul>
+<h2 id="JSON数据处理">JSON数据处理</h2>
+<p>现代 Web 应用几乎离不开 <code>JSON</code>。Rocket 通过 <code>Json</code> 类型提供了无缝的 <code>JSON</code> 支持：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> rocket::serde::&#123;Deserialize, Serialize, json::Json&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 定义数据结构,需要派生序列化/反序列化 trait</span></span><br><span class="line"><span class="meta">#[derive(Debug, Deserialize, Serialize)]</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">User</span> &#123;</span><br><span class="line">    name: <span class="type">String</span>,</span><br><span class="line">    email: <span class="type">String</span>,</span><br><span class="line">    age: <span class="type">u8</span>,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 接收 JSON 请求体</span></span><br><span class="line"><span class="meta">#[post(<span class="string">&quot;/users&quot;</span>, data = <span class="string">&quot;&lt;user&gt;&quot;</span>)]</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">create_user</span>(user: Json&lt;User&gt;) <span class="punctuation">-&gt;</span> Json&lt;User&gt; &#123;</span><br><span class="line">    <span class="comment">// user.0 可以获取原始的 User 实例</span></span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;收到用户: &#123;:?&#125;&quot;</span>, user.<span class="number">0</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 直接返回 JSON,Rocket 会自动序列化并设置 Content-Type: application/json</span></span><br><span class="line">    user</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>工作原理</strong>：</p>
+<ol>
+<li>Rocket 读取请求体</li>
+<li>尝试用 <code>serde_json</code> 解析成 <code>User</code> 结构</li>
+<li>成功则传入处理函数，失败则返回 400 Bad Request</li>
+</ol>
+<p><strong>测试</strong>：使用 Python 脚本或 curl：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">curl -X POST http://localhost:8000/users \</span><br><span class="line">  -H <span class="string">&quot;Content-Type: application/json&quot;</span> \</span><br><span class="line">  -d <span class="string">&#x27;&#123;&quot;name&quot;:&quot;Alice&quot;,&quot;email&quot;:&quot;alice@example.com&quot;,&quot;age&quot;:25&#125;&#x27;</span></span><br></pre></td></tr></table></figure>
+<h2 id="表单数据处理">表单数据处理</h2>
+<p>传统的 HTML 表单提交使用 <code>application/x-www-form-urlencoded</code> 格式：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> rocket::form::Form;</span><br><span class="line"></span><br><span class="line"><span class="meta">#[derive(Debug, FromForm)]</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">LoginForm</span> &#123;</span><br><span class="line">    username: <span class="type">String</span>,</span><br><span class="line">    <span class="meta">#[field(validate = len(1..))]</span>  <span class="comment">// 验证:密码长度至少为 1</span></span><br><span class="line">    password: <span class="type">String</span>,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#[post(<span class="string">&quot;/login&quot;</span>, data = <span class="string">&quot;&lt;form&gt;&quot;</span>)]</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">login</span>(form: Form&lt;LoginForm&gt;) <span class="punctuation">-&gt;</span> <span class="type">String</span> &#123;</span><br><span class="line">    <span class="comment">// 验证通过后,可以安全地使用数据</span></span><br><span class="line">    <span class="built_in">format!</span>(<span class="string">&quot;用户 &#123;&#125; 登录成功&quot;</span>, form.username)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>验证器</strong>：Rocket 提供了丰富的内置验证器：</p>
+<ul>
+<li><code>len(1..10)</code>：长度在 1-10 之间</li>
+<li><code>contains(&quot;abc&quot;)</code>：包含子串</li>
+<li><code>email()</code>：符合邮箱格式</li>
+<li><code>range(1..100)</code>：数值范围</li>
+</ul>
+<p>测试：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">curl -X POST http://localhost:8000/login \</span><br><span class="line">  -d <span class="string">&quot;username=alice&amp;password=123456&quot;</span></span><br></pre></td></tr></table></figure>
+<h2 id="文件上传">文件上传</h2>
+<p>文件上传需要处理二进制数据和可能的临时文件：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> rocket::fs::TempFile;</span><br><span class="line"><span class="keyword">use</span> rocket::form::Form;</span><br><span class="line"></span><br><span class="line"><span class="meta">#[derive(Debug, FromForm)]</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">UploadForm</span>&lt;<span class="symbol">&#x27;r</span>&gt; &#123;</span><br><span class="line">    file: TempFile&lt;<span class="symbol">&#x27;r</span>&gt;,      <span class="comment">// 临时文件,生命周期与请求绑定</span></span><br><span class="line">    description: <span class="type">String</span>,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#[post(<span class="string">&quot;/upload&quot;</span>, data = <span class="string">&quot;&lt;form&gt;&quot;</span>)]</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">fn</span> <span class="title function_">upload</span>(<span class="keyword">mut</span> form: Form&lt;UploadForm&lt;<span class="symbol">&#x27;_</span>&gt;&gt;) <span class="punctuation">-&gt;</span> <span class="type">String</span> &#123;</span><br><span class="line">    <span class="comment">// 获取原始文件名(客户端上传时的文件名)</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">filename</span> = <span class="keyword">match</span> form.file.<span class="title function_ invoke__">raw_name</span>() &#123;</span><br><span class="line">        <span class="title function_ invoke__">Some</span>(name) =&gt; name.<span class="title function_ invoke__">as_str</span>().<span class="title function_ invoke__">unwrap_or</span>(<span class="string">&quot;unknown&quot;</span>).<span class="title function_ invoke__">to_string</span>(),</span><br><span class="line">        <span class="literal">None</span> =&gt; <span class="string">&quot;unknown&quot;</span>.<span class="title function_ invoke__">to_string</span>(),</span><br><span class="line">    &#125;;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 保存文件到当前目录</span></span><br><span class="line">    <span class="keyword">match</span> form.file.<span class="title function_ invoke__">copy_to</span>(&amp;filename).<span class="keyword">await</span> &#123;</span><br><span class="line">        <span class="title function_ invoke__">Ok</span>(_) =&gt; <span class="built_in">format!</span>(<span class="string">&quot;文件已保存: &#123;&#125;&quot;</span>, filename),</span><br><span class="line">        <span class="title function_ invoke__">Err</span>(e) =&gt; <span class="built_in">format!</span>(<span class="string">&quot;保存失败: &#123;&#125;&quot;</span>, e),</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>关键点</strong>：</p>
+<ul>
+<li><code>TempFile</code> 实现了异步读取，需要 <code>.await</code></li>
+<li><code>raw_name()</code> 返回原始文件名（可能包含路径信息）</li>
+<li><code>copy_to()</code> 将临时文件保存到指定位置</li>
+</ul>
+<p>测试：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 创建测试文件</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;test content&quot;</span> &gt; test.txt</span><br><span class="line"></span><br><span class="line"><span class="comment"># 上传</span></span><br><span class="line">curl -X POST http://localhost:8000/upload \</span><br><span class="line">  -F <span class="string">&quot;file=@test.txt&quot;</span> \</span><br><span class="line">  -F <span class="string">&quot;description=test&quot;</span></span><br></pre></td></tr></table></figure>
+<h1>响应生成</h1>
+<h2 id="基础响应类型">基础响应类型</h2>
+<p>Rocket 会自动将你的返回值转换成 HTTP 响应。最常见的情况：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 返回字符串 → Content-Type: text/plain</span></span><br><span class="line"><span class="meta">#[get(<span class="string">&quot;/&quot;</span>)]</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">text</span>() <span class="punctuation">-&gt;</span> <span class="type">String</span> &#123;</span><br><span class="line">    <span class="string">&quot;Hello&quot;</span>.<span class="title function_ invoke__">to_string</span>()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 返回 JSON</span></span><br><span class="line"><span class="meta">#[get(<span class="string">&quot;/user&quot;</span>)]</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">json</span>() <span class="punctuation">-&gt;</span> Json&lt;User&gt; &#123;</span><br><span class="line">    <span class="title function_ invoke__">Json</span>(User &#123; name: <span class="string">&quot;Alice&quot;</span>.<span class="title function_ invoke__">into</span>() &#125;)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 返回 HTML</span></span><br><span class="line"><span class="keyword">use</span> rocket::response::content;</span><br><span class="line"></span><br><span class="line"><span class="meta">#[get(<span class="string">&quot;/page&quot;</span>)]</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">html</span>() <span class="punctuation">-&gt;</span> content::RawHtml&lt;&amp;<span class="symbol">&#x27;static</span> <span class="type">str</span>&gt; &#123;</span><br><span class="line">    content::<span class="title function_ invoke__">RawHtml</span>(<span class="string">&quot;&lt;h1&gt;Hello&lt;/h1&gt;&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>支持的响应类型</strong>：</p>
+<ul>
+<li><code>String</code> / <code>&amp;str</code> → 纯文本</li>
+<li><code>Json&lt;T&gt;</code> → JSON</li>
+<li><code>content::RawHtml&lt;T&gt;</code> → HTML</li>
+<li><code>NamedFile</code> → 文件</li>
+<li><code>Redirect</code> → 重定向</li>
+<li><code>()</code> → 空响应（204 No Content）</li>
+</ul>
+<h2 id="返回状态码">返回状态码</h2>
+<p><strong>重要</strong>：浏览器只显示响应内容，不显示状态码。状态码是给客户端程序（如前端 JS、移动 App）判断请求成功与否用的。</p>
+<p>用元组 <code>(状态码, 响应内容)</code> 返回自定义状态码：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> rocket::http::Status;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 返回 201 Created(资源创建成功)</span></span><br><span class="line"><span class="meta">#[post(<span class="string">&quot;/users&quot;</span>)]</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">create_user</span>() <span class="punctuation">-&gt;</span> (Status, &amp;<span class="symbol">&#x27;static</span> <span class="type">str</span>) &#123;</span><br><span class="line">    (Status::Created, <span class="string">&quot;用户创建成功&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 返回 404 Not Found</span></span><br><span class="line"><span class="meta">#[get(<span class="string">&quot;/user/&lt;id&gt;&quot;</span>)]</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">get_user</span>(id: <span class="type">u32</span>) <span class="punctuation">-&gt;</span> (Status, <span class="type">String</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> id == <span class="number">42</span> &#123;</span><br><span class="line">        (Status::<span class="literal">Ok</span>, <span class="built_in">format!</span>(<span class="string">&quot;用户 &#123;&#125;&quot;</span>, id))</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        (Status::NotFound, <span class="string">&quot;用户不存在&quot;</span>.<span class="title function_ invoke__">to_string</span>())</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 返回 418 I&#x27;m a teapot(愚人节彩蛋)</span></span><br><span class="line"><span class="meta">#[get(<span class="string">&quot;/teapot&quot;</span>)]</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">teapot</span>() <span class="punctuation">-&gt;</span> (Status, &amp;<span class="symbol">&#x27;static</span> <span class="type">str</span>) &#123;</span><br><span class="line">    (Status::ImATeapot, <span class="string">&quot;我是茶壶&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="重定向">重定向</h2>
+<p>重定向告诉浏览器&quot;去访问另一个 URL&quot;：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> rocket::response::Redirect;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 重定向到内部路由</span></span><br><span class="line"><span class="meta">#[get(<span class="string">&quot;/old-page&quot;</span>)]</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">old_page</span>() <span class="punctuation">-&gt;</span> Redirect &#123;</span><br><span class="line">    <span class="comment">// uri! 宏会生成正确的 URL,避免硬编码</span></span><br><span class="line">    Redirect::<span class="title function_ invoke__">to</span>(uri!(new_page))</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#[get(<span class="string">&quot;/new-page&quot;</span>)]</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">new_page</span>() <span class="punctuation">-&gt;</span> &amp;<span class="symbol">&#x27;static</span> <span class="type">str</span> &#123;</span><br><span class="line">    <span class="string">&quot;这是新页面&quot;</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 重定向到外部网站</span></span><br><span class="line"><span class="meta">#[get(<span class="string">&quot;/search&quot;</span>)]</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">search</span>() <span class="punctuation">-&gt;</span> Redirect &#123;</span><br><span class="line">    Redirect::<span class="title function_ invoke__">to</span>(uri!(<span class="string">&quot;https://www.google.com&quot;</span>))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="使用-Result-处理错误">使用 Result 处理错误</h2>
+<p><code>Result&lt;T, E&gt;</code> 是一种优雅的错误处理方式，其中 <code>E</code> 必须是实现了 <code>Responder</code> 的类型：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#[get(<span class="string">&quot;/user/&lt;id&gt;&quot;</span>)]</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">get_user</span>(id: <span class="type">u32</span>) <span class="punctuation">-&gt;</span> <span class="type">Result</span>&lt;Json&lt;User&gt;, Status&gt; &#123;</span><br><span class="line">    <span class="keyword">if</span> id == <span class="number">42</span> &#123;</span><br><span class="line">        <span class="title function_ invoke__">Ok</span>(<span class="title function_ invoke__">Json</span>(User &#123; name: <span class="string">&quot;Alice&quot;</span>.<span class="title function_ invoke__">into</span>() &#125;))</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="title function_ invoke__">Err</span>(Status::NotFound)  <span class="comment">// 自动转换成 404 响应</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>优点</strong>：Rocket 会自动将 <code>Ok</code> 分支正常响应，<code>Err</code> 分支转换成错误响应，代码非常简洁。</p>
+<h1>状态管理</h1>
+<p>HTTP 是无状态的——每个请求都是独立的。但很多应用需要<strong>跨请求共享数据</strong>：</p>
+<ul>
+<li>计数器（统计访问次数）</li>
+<li>数据库连接池</li>
+<li>配置信息</li>
+<li>缓存数据</li>
+</ul>
+<p>Rocket 通过<strong>托管状态</strong>解决这个问题。</p>
+<h2 id="使用托管状态">使用托管状态</h2>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::sync::atomic::&#123;AtomicUsize, Ordering&#125;;</span><br><span class="line"><span class="keyword">use</span> rocket::State;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 定义状态结构</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">AppState</span> &#123;</span><br><span class="line">    request_count: AtomicUsize,  <span class="comment">// 原子计数器,线程安全</span></span><br><span class="line">    app_name: <span class="type">String</span>,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 在路由函数中通过 State&lt;T&gt; 访问</span></span><br><span class="line"><span class="meta">#[get(<span class="string">&quot;/count&quot;</span>)]</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">get_count</span>(state: &amp;State&lt;AppState&gt;) <span class="punctuation">-&gt;</span> <span class="type">String</span> &#123;</span><br><span class="line">    <span class="comment">// fetch_add 返回增加前的值</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">count</span> = state.request_count.<span class="title function_ invoke__">fetch_add</span>(<span class="number">1</span>, Ordering::SeqCst);</span><br><span class="line">    <span class="built_in">format!</span>(<span class="string">&quot;&#123;&#125; 已处理 &#123;&#125; 个请求&quot;</span>, state.app_name, count + <span class="number">1</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#[launch]</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">rocket</span>() <span class="punctuation">-&gt;</span> _ &#123;</span><br><span class="line">    <span class="comment">// 创建状态实例</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">app_state</span> = AppState &#123;</span><br><span class="line">        request_count: AtomicUsize::<span class="title function_ invoke__">new</span>(<span class="number">0</span>),</span><br><span class="line">        app_name: <span class="string">&quot;MyApp&quot;</span>.<span class="title function_ invoke__">to_string</span>(),</span><br><span class="line">    &#125;;</span><br><span class="line">    rocket::<span class="title function_ invoke__">build</span>()</span><br><span class="line">        .<span class="title function_ invoke__">manage</span>(app_state)  <span class="comment">// 托管状态,所有请求共享</span></span><br><span class="line">        .<span class="title function_ invoke__">mount</span>(<span class="string">&quot;/&quot;</span>, routes![get_count])</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>关键理解</strong>：</p>
+<ul>
+<li><code>manage()</code> 注册状态，整个应用生命周期只有一个实例</li>
+<li>所有请求共享同一个状态（需要线程安全，用 <code>Mutex</code>、<code>RwLock</code> 或 <code>Atomic</code>）</li>
+<li><code>State&lt;T&gt;</code> 是只读引用，不能修改状态本身，但可以修改内部的可变数据</li>
+</ul>
+<h2 id="复杂状态的线程安全">复杂状态的线程安全</h2>
+<p>如果状态包含非原子类型，需要用 <code>Mutex</code> 或 <code>RwLock</code>：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::sync::Mutex;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">AppState</span> &#123;</span><br><span class="line">    visitors: Mutex&lt;<span class="type">Vec</span>&lt;<span class="type">String</span>&gt;&gt;,  <span class="comment">// Mutex 保证互斥访问</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#[post(<span class="string">&quot;/visit/&lt;name&gt;&quot;</span>)]</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">visit</span>(name: <span class="type">String</span>, state: &amp;State&lt;AppState&gt;) <span class="punctuation">-&gt;</span> <span class="type">String</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">visitors</span> = state.visitors.<span class="title function_ invoke__">lock</span>().<span class="title function_ invoke__">unwrap</span>();</span><br><span class="line">    visitors.<span class="title function_ invoke__">push</span>(name.<span class="title function_ invoke__">clone</span>());</span><br><span class="line">    format(<span class="string">&quot;欢迎 &#123;&#125;，当前访客数: &#123;&#125;&quot;</span>, name, visitors.<span class="title function_ invoke__">len</span>())</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1>错误处理</h1>
+<h2 id="全局错误捕获器（Catcher）">全局错误捕获器（Catcher）</h2>
+<p>当请求没有匹配的路由或发生错误时，Rocket 会调用错误捕获器：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> rocket::catch;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 捕获 404 错误(页面未找到)</span></span><br><span class="line"><span class="meta">#[catch(404)]</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">not_found</span>() <span class="punctuation">-&gt;</span> &amp;<span class="symbol">&#x27;static</span> <span class="type">str</span> &#123;</span><br><span class="line">    <span class="string">&quot;404 - 你要找的页面飞走了&quot;</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 捕获 500 错误(服务器内部错误)</span></span><br><span class="line"><span class="meta">#[catch(500)]</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">internal_error</span>() <span class="punctuation">-&gt;</span> &amp;<span class="symbol">&#x27;static</span> <span class="type">str</span> &#123;</span><br><span class="line">    <span class="string">&quot;500 - 服务器出了一点小问题&quot;</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#[launch]</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">rocket</span>() <span class="punctuation">-&gt;</span> _ &#123;</span><br><span class="line">    rocket::<span class="title function_ invoke__">build</span>()</span><br><span class="line">        .<span class="title function_ invoke__">mount</span>(<span class="string">&quot;/&quot;</span>, routes![...])</span><br><span class="line">        .<span class="title function_ invoke__">register</span>(<span class="string">&quot;/&quot;</span>, catchers![not_found, internal_error])  <span class="comment">// 注册错误捕获器</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>注意</strong>：错误捕获器可以返回 HTML、JSON 等任何实现了 <code>Responder</code> 的类型。</p>
+<h2 id="自定义错误响应">自定义错误响应</h2>
+<p>更灵活的错误处理：定义自己的错误类型并实现 <code>Responder</code>：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> rocket::response::&#123;<span class="keyword">self</span>, Responder&#125;;</span><br><span class="line"><span class="keyword">use</span> rocket::http::Status;</span><br><span class="line"></span><br><span class="line"><span class="keyword">enum</span> <span class="title class_">ApiError</span> &#123;</span><br><span class="line">    <span class="title function_ invoke__">NotFound</span>(<span class="type">String</span>),</span><br><span class="line">    <span class="title function_ invoke__">BadRequest</span>(<span class="type">String</span>),</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">impl</span>&lt;<span class="symbol">&#x27;r</span>&gt; Responder&lt;<span class="symbol">&#x27;r</span>, <span class="symbol">&#x27;static</span>&gt; <span class="keyword">for</span> <span class="title class_">ApiError</span> &#123;</span><br><span class="line">    <span class="keyword">fn</span> <span class="title function_">respond_to</span>(<span class="keyword">self</span>, req: &amp;<span class="symbol">&#x27;r</span> rocket::Request&lt;<span class="symbol">&#x27;_</span>&gt;) <span class="punctuation">-&gt;</span> response::<span class="type">Result</span>&lt;<span class="symbol">&#x27;static</span>&gt; &#123;</span><br><span class="line">        <span class="keyword">let</span> (status, message) = <span class="keyword">match</span> <span class="keyword">self</span> &#123;</span><br><span class="line">            ApiError::<span class="title function_ invoke__">NotFound</span>(msg) =&gt; (Status::NotFound, msg),</span><br><span class="line">            ApiError::<span class="title function_ invoke__">BadRequest</span>(msg) =&gt; (Status::BadRequest, msg),</span><br><span class="line">        &#125;;</span><br><span class="line">        <span class="comment">// 可以返回 JSON 格式的错误信息</span></span><br><span class="line">        (status, message).<span class="title function_ invoke__">respond_to</span>(req)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#[get(<span class="string">&quot;/user/&lt;id&gt;&quot;</span>)]</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">get_user</span>(id: <span class="type">u32</span>) <span class="punctuation">-&gt;</span> <span class="type">Result</span>&lt;<span class="type">String</span>, ApiError&gt; &#123;</span><br><span class="line">    <span class="keyword">if</span> id == <span class="number">0</span> &#123;</span><br><span class="line">        <span class="title function_ invoke__">Err</span>(ApiError::<span class="title function_ invoke__">BadRequest</span>(<span class="string">&quot;ID 不能为 0&quot;</span>.<span class="title function_ invoke__">to_string</span>()))</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> id != <span class="number">42</span> &#123;</span><br><span class="line">        <span class="title function_ invoke__">Err</span>(ApiError::<span class="title function_ invoke__">NotFound</span>(<span class="built_in">format!</span>(<span class="string">&quot;用户 &#123;&#125; 不存在&quot;</span>, id)))</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="title function_ invoke__">Ok</span>(<span class="string">&quot;找到用户&quot;</span>.<span class="title function_ invoke__">to_string</span>())</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1>模板渲染</h1>
+<p>当需要<strong>动态生成 HTML</strong>（如用户个人主页、博客文章）时，手动拼接字符串非常痛苦且不安全。模板引擎解决了这个问题。</p>
+<p>Rocket 通过 <code>rocket_dyn_templates</code> 集成了 Handlebars 模板引擎。</p>
+<h2 id="配置模板支持">配置模板支持</h2>
+<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[dependencies]</span></span><br><span class="line"><span class="attr">rocket</span> = <span class="string">&quot;0.5.1&quot;</span></span><br><span class="line"><span class="attr">rocket_dyn_templates</span> = &#123; version = <span class="string">&quot;0.1.0&quot;</span>, features = [<span class="string">&quot;handlebars&quot;</span>] &#125;</span><br><span class="line"><span class="attr">serde</span> = &#123; version = <span class="string">&quot;1.0&quot;</span>, features = [<span class="string">&quot;derive&quot;</span>] &#125;</span><br></pre></td></tr></table></figure>
+<h2 id="创建模板文件">创建模板文件</h2>
+<p>在项目根目录创建 <code>templates/hello.html.hbs</code>：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!DOCTYPE <span class="keyword">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">&quot;UTF-8&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">title</span>&gt;</span>&#123;&#123;title&#125;&#125;<span class="tag">&lt;/<span class="name">title</span>&gt;</span>  <span class="comment">&lt;!-- &#123;&#123;变量名&#125;&#125; 是 Handlebars 的插值语法 --&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">h1</span>&gt;</span>&#123;&#123;message&#125;&#125;<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">p</span>&gt;</span>欢迎, &#123;&#123;name&#125;&#125;!<span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line">    </span><br><span class="line">    &#123;&#123;#if show_list&#125;&#125;  <span class="comment">&lt;!-- 条件判断 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">ul</span>&gt;</span></span><br><span class="line">        &#123;&#123;#each items&#125;&#125;  <span class="comment">&lt;!-- 循环 --&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">li</span>&gt;</span>&#123;&#123;this&#125;&#125;<span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">        &#123;&#123;/each&#125;&#125;</span><br><span class="line">        <span class="tag">&lt;/<span class="name">ul</span>&gt;</span></span><br><span class="line">    &#123;&#123;/if&#125;&#125;</span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h2 id="渲染模板">渲染模板</h2>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> rocket_dyn_templates::&#123;Template, context&#125;;</span><br><span class="line"></span><br><span class="line"><span class="meta">#[get(<span class="string">&quot;/hello/&lt;name&gt;&quot;</span>)]</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">hello</span>(name: <span class="type">String</span>) <span class="punctuation">-&gt;</span> Template &#123;</span><br><span class="line">    <span class="comment">// context! 宏创建模板上下文(数据)</span></span><br><span class="line">    Template::<span class="title function_ invoke__">render</span>(<span class="string">&quot;hello&quot;</span>, context! &#123;</span><br><span class="line">        title: <span class="string">&quot;欢迎页&quot;</span>,</span><br><span class="line">        message: <span class="string">&quot;Hello Rocket!&quot;</span>,</span><br><span class="line">        name: name,</span><br><span class="line">        show_list: <span class="literal">true</span>,</span><br><span class="line">        items: [<span class="string">&quot;Rust&quot;</span>, <span class="string">&quot;Rocket&quot;</span>, <span class="string">&quot;Web&quot;</span>],</span><br><span class="line">    &#125;)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#[launch]</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">rocket</span>() <span class="punctuation">-&gt;</span> _ &#123;</span><br><span class="line">    rocket::<span class="title function_ invoke__">build</span>()</span><br><span class="line">        .<span class="title function_ invoke__">attach</span>(Template::<span class="title function_ invoke__">fairing</span>())  <span class="comment">// 附加模板引擎</span></span><br><span class="line">        .<span class="title function_ invoke__">mount</span>(<span class="string">&quot;/&quot;</span>, routes![hello])</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>访问 <code>http://localhost:8000/hello/Alice</code>，你会看到动态生成的 HTML。</p>
+<h1>文件服务</h1>
+<p>文件服务在 Web 开发中很常见，但有个关键问题需要处理：<strong>浏览器对不同文件类型的行为不同</strong>。</p>
+<ul>
+<li><strong>图片、PDF、Excel</strong>：浏览器会直接预览/打开，而不是下载</li>
+<li><strong>ZIP、EXE、RAR</strong>：浏览器会强制下载</li>
+</ul>
+<p>但很多业务需求是<strong>无论什么文件，都让用户下载</strong>（比如安装包、数据导出）。这就需要针对不同场景采用不同的响应策略</p>
+<h2 id="基础文件服务">基础文件服务</h2>
+<p>最简单的文件服务：直接返回 <code>NamedFile</code>。浏览器会根据文件类型决定行为</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> rocket::fs::NamedFile;</span><br><span class="line"></span><br><span class="line"><span class="meta">#[get(<span class="string">&quot;/pdf&quot;</span>)]</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">fn</span> <span class="title function_">serve_pdf</span>() <span class="punctuation">-&gt;</span> <span class="type">Option</span>&lt;NamedFile&gt; &#123;</span><br><span class="line">    <span class="comment">// 从项目根目录的 files/zzc.pdf 读取</span></span><br><span class="line">    NamedFile::<span class="title function_ invoke__">open</span>(<span class="string">&quot;files/zzc.pdf&quot;</span>).<span class="keyword">await</span>.<span class="title function_ invoke__">ok</span>()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>路径说明</strong>：文件路径基于<strong>当前工作目录</strong>：</p>
+<ul>
+<li>开发时：<code>cargo run</code> 执行的目录（通常是项目根目录）</li>
+<li>部署时：二进制文件所在的目录</li>
+</ul>
+<p><strong><code>NamedFile</code> 本身不决定预览还是下载</strong>，它只是：</p>
+<ol>
+<li>读取文件内容</li>
+<li><strong>自动设置正确的 <code>Content-Type</code></strong>（根据文件扩展名）</li>
+</ol>
+<p><strong>真正决定浏览器行为的是 <code>Content-Type</code> 响应头</strong>：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">Content-Type</th>
+<th style="text-align:left">浏览器行为</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><code>application/pdf</code></td>
+<td style="text-align:left">预览（打开 PDF 阅读器）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>image/png</code></td>
+<td style="text-align:left">预览（显示图片）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>video/mp4</code></td>
+<td style="text-align:left">预览（播放视频）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>text/html</code></td>
+<td style="text-align:left">预览（渲染页面）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>application/zip</code></td>
+<td style="text-align:left"><strong>下载</strong>（浏览器无法预览）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>application/x-msdownload</code> (.exe)</td>
+<td style="text-align:left"><strong>下载</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><code>application/octet-stream</code></td>
+<td style="text-align:left"><strong>下载</strong>（二进制流）</td>
+</tr>
+</tbody>
+</table>
+<h2 id="强制下载（二进制流方式）">强制下载（二进制流方式）</h2>
+<p>设置 <code>Content-Type: application/octet-stream</code>（二进制流）</p>
+<p>这种方式的原理是：告诉浏览器&quot;这是一个二进制文件，我不知道它是什么类型&quot;，浏览器就会强制下载。</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> rocket::http::ContentType;</span><br><span class="line"><span class="keyword">use</span> rocket::fs::NamedFile;</span><br><span class="line"></span><br><span class="line"><span class="meta">#[get(<span class="string">&quot;/download/&lt;filename&gt;&quot;</span>)]</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">fn</span> <span class="title function_">download_binary</span>(filename: <span class="type">String</span>) <span class="punctuation">-&gt;</span> <span class="type">Option</span>&lt;(ContentType, NamedFile)&gt; &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">file</span> = NamedFile::<span class="title function_ invoke__">open</span>(<span class="built_in">format!</span>(<span class="string">&quot;files/&#123;&#125;&quot;</span>, filename)).<span class="keyword">await</span>.<span class="title function_ invoke__">ok</span>()?;</span><br><span class="line">    <span class="comment">// 设置为二进制流,浏览器会强制下载</span></span><br><span class="line">    <span class="title function_ invoke__">Some</span>((ContentType::Binary, file))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>特点</strong>：</p>
+<ul>
+<li>✅ 简单直接，无需自定义结构体</li>
+<li>✅ 强制下载，不会预览</li>
+<li>❌ <strong>文件名丢失</strong>：下载后的文件通常叫 <code>download</code>（没有后缀名），用户需要手动改名</li>
+</ul>
+<h2 id="强制下载（保留文件名）">强制下载（保留文件名）</h2>
+<p>设置 <code>Content-Disposition: attachment; filename=&quot;xxx&quot;</code> 响应头</p>
+<p>这是生产环境推荐的方式，既能强制下载，又能保留原文件名：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> rocket::http::Header;</span><br><span class="line"><span class="keyword">use</span> rocket::response::Responder;</span><br><span class="line"><span class="keyword">use</span> rocket::fs::NamedFile;</span><br><span class="line"><span class="meta">#[get(<span class="string">&quot;/rar&quot;</span>)]</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">fn</span> <span class="title function_">rar</span>() <span class="punctuation">-&gt;</span> FileDownload &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">file</span> = NamedFile::<span class="title function_ invoke__">open</span>(<span class="string">&quot;files/update.rar&quot;</span>)</span><br><span class="line">        .<span class="keyword">await</span></span><br><span class="line">        .<span class="title function_ invoke__">expect</span>(<span class="string">&quot;文件不存在&quot;</span>);</span><br><span class="line"></span><br><span class="line">    FileDownload &#123;</span><br><span class="line">        file,</span><br><span class="line">        filename: <span class="string">&quot;update.rar&quot;</span>.<span class="title function_ invoke__">to_string</span>(),</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 自定义下载响应器</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">FileDownload</span> &#123;</span><br><span class="line">    file: NamedFile,</span><br><span class="line">    filename: <span class="type">String</span>,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">impl</span>&lt;<span class="symbol">&#x27;r</span>&gt; Responder&lt;<span class="symbol">&#x27;r</span>, <span class="symbol">&#x27;static</span>&gt; <span class="keyword">for</span> <span class="title class_">FileDownload</span> &#123;</span><br><span class="line">    <span class="keyword">fn</span> <span class="title function_">respond_to</span>(<span class="keyword">self</span>, request: &amp;<span class="symbol">&#x27;r</span> rocket::Request&lt;<span class="symbol">&#x27;_</span>&gt;) <span class="punctuation">-&gt;</span> rocket::response::<span class="type">Result</span>&lt;<span class="symbol">&#x27;static</span>&gt; &#123;</span><br><span class="line">        <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">response</span> = <span class="keyword">self</span>.file.<span class="title function_ invoke__">respond_to</span>(request)?;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 设置 Content-Disposition 头告诉浏览器这是附件需要下载</span></span><br><span class="line">        response.<span class="title function_ invoke__">set_header</span>(Header::<span class="title function_ invoke__">new</span>(</span><br><span class="line">            <span class="string">&quot;Content-Disposition&quot;</span>,</span><br><span class="line">            <span class="built_in">format!</span>(<span class="string">r#&quot;attachment; filename=&quot;&#123;&#125;&quot;&quot;#</span>, <span class="keyword">self</span>.filename),</span><br><span class="line">        ));</span><br><span class="line"></span><br><span class="line">        <span class="title function_ invoke__">Ok</span>(response)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>特点</strong>：</p>
+<ul>
+<li>✅ 强制下载</li>
+<li>✅ <strong>保留原文件名</strong>（包括后缀）</li>
+<li>✅ 用户体验好</li>
+<li>⚠️ 需要自定义 Responder（但代码是模板化的，可以复用）</li>
+</ul>
+<h1>中间件（Fairing）</h1>
+<p><strong>Fairing</strong>（整流罩）是 Rocket 的中间件系统。它让你可以在请求处理的<strong>不同阶段</strong>插入自定义逻辑，而不需要修改路由函数。</p>
+<p><strong>典型用途</strong>：</p>
+<ul>
+<li>日志记录（每个请求都打印日志）</li>
+<li>请求计时（统计 API 响应时间）</li>
+<li>CORS 处理（添加跨域响应头）</li>
+<li>认证授权（检查登录状态）</li>
+<li>请求限流</li>
+</ul>
+<h2 id="Fairing-的生命周期">Fairing 的生命周期</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">阶段</th>
+<th style="text-align:left">触发时机</th>
+<th style="text-align:left">用途示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><code>on_attach</code></td>
+<td style="text-align:left">Rocket 启动时</td>
+<td style="text-align:left">验证配置、初始化资源</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>on_request</code></td>
+<td style="text-align:left">请求到达时</td>
+<td style="text-align:left">日志、认证、限流</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>on_response</code></td>
+<td style="text-align:left">响应返回前</td>
+<td style="text-align:left">添加响应头、压缩响应</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>on_shutdown</code></td>
+<td style="text-align:left">服务关闭时</td>
+<td style="text-align:left">清理资源、断开连接</td>
+</tr>
+</tbody>
+</table>
+<h2 id="实现日志-Fairing">实现日志 Fairing</h2>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> rocket::fairing::&#123;Fairing, Info, Kind&#125;;</span><br><span class="line"><span class="keyword">use</span> rocket::&#123;Request, Data, Response&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">pub</span> <span class="keyword">struct</span> <span class="title class_">LoggerFairing</span>;</span><br><span class="line"></span><br><span class="line"><span class="meta">#[rocket::async_trait]</span></span><br><span class="line"><span class="keyword">impl</span> <span class="title class_">Fairing</span> <span class="keyword">for</span> <span class="title class_">LoggerFairing</span> &#123;</span><br><span class="line">    <span class="comment">// 告诉 Rocket 这个 Fairing 要介入哪些阶段</span></span><br><span class="line">    <span class="keyword">fn</span> <span class="title function_">info</span>(&amp;<span class="keyword">self</span>) <span class="punctuation">-&gt;</span> Info &#123;</span><br><span class="line">        Info &#123;</span><br><span class="line">            name: <span class="string">&quot;Request Logger&quot;</span>,</span><br><span class="line">            kind: Kind::Request | Kind::Response  <span class="comment">// 同时介入请求和响应</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 请求到达时触发</span></span><br><span class="line">    <span class="keyword">async</span> <span class="keyword">fn</span> <span class="title function_">on_request</span>(&amp;<span class="keyword">self</span>, req: &amp;<span class="keyword">mut</span> Request&lt;<span class="symbol">&#x27;_</span>&gt;, _: &amp;<span class="keyword">mut</span> Data&lt;<span class="symbol">&#x27;_</span>&gt;) &#123;</span><br><span class="line">        <span class="built_in">println!</span>(<span class="string">&quot;→ [&#123;&#125;] &#123;&#125;&quot;</span>, req.<span class="title function_ invoke__">method</span>(), req.<span class="title function_ invoke__">uri</span>());</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 响应返回前触发</span></span><br><span class="line">    <span class="keyword">async</span> <span class="keyword">fn</span> <span class="title function_">on_response</span>&lt;<span class="symbol">&#x27;r</span>&gt;(&amp;<span class="keyword">self</span>, req: &amp;<span class="symbol">&#x27;r</span> Request&lt;<span class="symbol">&#x27;_</span>&gt;, res: &amp;<span class="keyword">mut</span> Response&lt;<span class="symbol">&#x27;r</span>&gt;) &#123;</span><br><span class="line">        <span class="built_in">println!</span>(<span class="string">&quot;← [&#123;&#125;] &#123;&#125; - &#123;&#125;&quot;</span>, req.<span class="title function_ invoke__">method</span>(), req.<span class="title function_ invoke__">uri</span>(), res.<span class="title function_ invoke__">status</span>());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="实现计时-Fairing">实现计时 Fairing</h2>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::time::Instant;</span><br><span class="line"><span class="keyword">use</span> std::collections::HashMap;</span><br><span class="line"><span class="keyword">use</span> std::sync::Mutex;</span><br><span class="line"></span><br><span class="line"><span class="keyword">pub</span> <span class="keyword">struct</span> <span class="title class_">TimerFairing</span> &#123;</span><br><span class="line">    start_times: Mutex&lt;HashMap&lt;<span class="type">u64</span>, Instant&gt;&gt;,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#[rocket::async_trait]</span></span><br><span class="line"><span class="keyword">impl</span> <span class="title class_">Fairing</span> <span class="keyword">for</span> <span class="title class_">TimerFairing</span> &#123;</span><br><span class="line">    <span class="keyword">fn</span> <span class="title function_">info</span>(&amp;<span class="keyword">self</span>) <span class="punctuation">-&gt;</span> Info &#123;</span><br><span class="line">        Info &#123; name: <span class="string">&quot;Request Timer&quot;</span>, kind: Kind::Request | Kind::Response &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">async</span> <span class="keyword">fn</span> <span class="title function_">on_request</span>(&amp;<span class="keyword">self</span>, req: &amp;<span class="keyword">mut</span> Request&lt;<span class="symbol">&#x27;_</span>&gt;, _: &amp;<span class="keyword">mut</span> Data&lt;<span class="symbol">&#x27;_</span>&gt;) &#123;</span><br><span class="line">        <span class="keyword">let</span> <span class="variable">id</span> = req <span class="keyword">as</span> *<span class="keyword">const</span> _ <span class="keyword">as</span> <span class="type">u64</span>;  <span class="comment">// 用内存地址作为请求 ID</span></span><br><span class="line">        <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">times</span> = <span class="keyword">self</span>.start_times.<span class="title function_ invoke__">lock</span>().<span class="title function_ invoke__">unwrap</span>();</span><br><span class="line">        times.<span class="title function_ invoke__">insert</span>(id, Instant::<span class="title function_ invoke__">now</span>());</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">async</span> <span class="keyword">fn</span> <span class="title function_">on_response</span>&lt;<span class="symbol">&#x27;r</span>&gt;(&amp;<span class="keyword">self</span>, req: &amp;<span class="symbol">&#x27;r</span> Request&lt;<span class="symbol">&#x27;_</span>&gt;, res: &amp;<span class="keyword">mut</span> Response&lt;<span class="symbol">&#x27;r</span>&gt;) &#123;</span><br><span class="line">        <span class="keyword">let</span> <span class="variable">id</span> = req <span class="keyword">as</span> *<span class="keyword">const</span> _ <span class="keyword">as</span> <span class="type">u64</span>;</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">let</span> <span class="variable">Some</span>(start) = <span class="keyword">self</span>.start_times.<span class="title function_ invoke__">lock</span>().<span class="title function_ invoke__">unwrap</span>().<span class="title function_ invoke__">remove</span>(&amp;id) &#123;</span><br><span class="line">            <span class="keyword">let</span> <span class="variable">elapsed</span> = start.<span class="title function_ invoke__">elapsed</span>();</span><br><span class="line">            <span class="built_in">println!</span>(<span class="string">&quot;⏱️ [&#123;&#125;] &#123;&#125; - 耗时: &#123;:?&#125;&quot;</span>, req.<span class="title function_ invoke__">method</span>(), req.<span class="title function_ invoke__">uri</span>(), elapsed);</span><br><span class="line">            <span class="comment">// 还可以将耗时添加到响应头</span></span><br><span class="line">            res.<span class="title function_ invoke__">set_header</span>(Header::<span class="title function_ invoke__">new</span>(<span class="string">&quot;X-Response-Time&quot;</span>, <span class="built_in">format!</span>(<span class="string">&quot;&#123;:?&#125;&quot;</span>, elapsed)));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="使用-Fairing">使用 Fairing</h2>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#[launch]</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">rocket</span>() <span class="punctuation">-&gt;</span> _ &#123;</span><br><span class="line">    rocket::<span class="title function_ invoke__">build</span>()</span><br><span class="line">        .<span class="title function_ invoke__">mount</span>(<span class="string">&quot;/&quot;</span>, routes![...])</span><br><span class="line">        .<span class="title function_ invoke__">attach</span>(LoggerFairing)        <span class="comment">// 先附加的先执行</span></span><br><span class="line">        .<span class="title function_ invoke__">attach</span>(TimerFairing::<span class="title function_ invoke__">new</span>())   <span class="comment">// 后附加的后执行(on_request阶段)</span></span><br><span class="line">        .<span class="title function_ invoke__">attach</span>(CORS)                  <span class="comment">// 跨域支持</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>执行顺序</strong>：</p>
+<ul>
+<li><code>on_request</code>：按附加顺序执行（Logger → Timer → CORS）</li>
+<li><code>on_response</code>：按附加顺序的<strong>相反顺序</strong>执行（CORS → Timer → Logger）</li>
+</ul>
+<h1>异步编程</h1>
+<h2 id="Rocket-的异步模型">Rocket 的异步模型</h2>
+<p>Rocket 0.5 全面拥抱异步编程。这意味着：</p>
+<ul>
+<li><strong>所有路由函数都可以是 <code>async fn</code></strong></li>
+<li>可以在处理函数中使用 <code>.await</code> 执行异步操作</li>
+<li>Rocket 自动管理异步运行时（基于 tokio）</li>
+</ul>
+<p><strong>重要转变</strong>：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Rocket 0.4(同步)</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">hello</span>() <span class="punctuation">-&gt;</span> <span class="type">String</span> &#123; <span class="string">&quot;Hello&quot;</span>.<span class="title function_ invoke__">to_string</span>() &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Rocket 0.5(异步)</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">fn</span> <span class="title function_">hello</span>() <span class="punctuation">-&gt;</span> <span class="type">String</span> &#123; <span class="string">&quot;Hello&quot;</span>.<span class="title function_ invoke__">to_string</span>() &#125;</span><br></pre></td></tr></table></figure>
+<h2 id="异步文件操作">异步文件操作</h2>
+<p>同步操作会阻塞线程，异步操作则不会</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ❌ 错误：阻塞线程,会降低并发性能</span></span><br><span class="line"><span class="meta">#[get(<span class="string">&quot;/bad&quot;</span>)]</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">bad_read</span>() <span class="punctuation">-&gt;</span> <span class="type">Result</span>&lt;<span class="type">String</span>, io::Error&gt; &#123;</span><br><span class="line">    std::fs::<span class="title function_ invoke__">read_to_string</span>(<span class="string">&quot;data.txt&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// ✅ 正确：异步 I/O,不阻塞</span></span><br><span class="line"><span class="meta">#[get(<span class="string">&quot;/good&quot;</span>)]</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">fn</span> <span class="title function_">good_read</span>() <span class="punctuation">-&gt;</span> <span class="type">Result</span>&lt;<span class="type">String</span>, io::Error&gt; &#123;</span><br><span class="line">    tokio::fs::<span class="title function_ invoke__">read_to_string</span>(<span class="string">&quot;data.txt&quot;</span>).<span class="keyword">await</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="CPU-密集型任务">CPU 密集型任务</h2>
+<p>异步擅长 I/O 操作（网络、文件、数据库），<strong>不擅长 CPU 密集型计算</strong>（图像处理、加密、排序）</p>
+<p>处理 CPU 密集型任务的正确方式</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> rocket::tokio::task::spawn_blocking;</span><br><span class="line"></span><br><span class="line"><span class="meta">#[get(<span class="string">&quot;/compute&quot;</span>)]</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">fn</span> <span class="title function_">heavy_compute</span>() <span class="punctuation">-&gt;</span> <span class="type">String</span> &#123;</span><br><span class="line">    <span class="comment">// spawn_blocking 将任务发送到专用线程池,避免阻塞异步运行时</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">result</span> = <span class="title function_ invoke__">spawn_blocking</span>(|| &#123;</span><br><span class="line">        <span class="comment">// 这里放同步的、CPU 密集的代码</span></span><br><span class="line">        <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">sum</span> = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> <span class="variable">i</span> <span class="keyword">in</span> <span class="number">0</span>..<span class="number">10_000_000</span> &#123;</span><br><span class="line">            sum += i;</span><br><span class="line">        &#125;</span><br><span class="line">        sum</span><br><span class="line">    &#125;).<span class="keyword">await</span>.<span class="title function_ invoke__">unwrap</span>();</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">format!</span>(<span class="string">&quot;计算结果: &#123;&#125;&quot;</span>, result)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="并发请求">并发请求</h2>
+<p>使用 <code>tokio::try_join!</code> 同时执行多个异步任务：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">async</span> <span class="keyword">fn</span> <span class="title function_">fetch_user</span>(id: <span class="type">u32</span>) <span class="punctuation">-&gt;</span> <span class="type">Result</span>&lt;<span class="type">String</span>, &amp;<span class="symbol">&#x27;static</span> <span class="type">str</span>&gt; &#123;</span><br><span class="line">    tokio::time::<span class="title function_ invoke__">sleep</span>(Duration::<span class="title function_ invoke__">from_millis</span>(<span class="number">100</span>)).<span class="keyword">await</span>;</span><br><span class="line">    <span class="title function_ invoke__">Ok</span>(<span class="built_in">format!</span>(<span class="string">&quot;User &#123;&#125;&quot;</span>, id))</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">fn</span> <span class="title function_">fetch_posts</span>() <span class="punctuation">-&gt;</span> <span class="type">Result</span>&lt;<span class="type">String</span>, &amp;<span class="symbol">&#x27;static</span> <span class="type">str</span>&gt; &#123;</span><br><span class="line">    tokio::time::<span class="title function_ invoke__">sleep</span>(Duration::<span class="title function_ invoke__">from_millis</span>(<span class="number">100</span>)).<span class="keyword">await</span>;</span><br><span class="line">    <span class="title function_ invoke__">Ok</span>(<span class="string">&quot;Posts&quot;</span>.<span class="title function_ invoke__">to_string</span>())</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#[get(<span class="string">&quot;/dashboard&quot;</span>)]</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">fn</span> <span class="title function_">dashboard</span>() <span class="punctuation">-&gt;</span> <span class="type">String</span> &#123;</span><br><span class="line">    <span class="comment">// 同时执行,总耗时约 100ms(而不是 200ms)</span></span><br><span class="line">    <span class="keyword">let</span> (user, posts) = tokio::try_join!(</span><br><span class="line">        <span class="title function_ invoke__">fetch_user</span>(<span class="number">42</span>),</span><br><span class="line">        <span class="title function_ invoke__">fetch_posts</span>(),</span><br><span class="line">    ).<span class="title function_ invoke__">unwrap</span>();</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">format!</span>(<span class="string">&quot;Dashboard: &#123;&#125; and &#123;&#125;&quot;</span>, user, posts)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1>附录：常用测试命令</h1>
+<h2 id="curl-命令">curl 命令</h2>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># GET 请求</span></span><br><span class="line">curl http://localhost:8000/users/42</span><br><span class="line"></span><br><span class="line"><span class="comment"># POST JSON</span></span><br><span class="line">curl -X POST http://localhost:8000/users \</span><br><span class="line">  -H <span class="string">&quot;Content-Type: application/json&quot;</span> \</span><br><span class="line">  -d <span class="string">&#x27;&#123;&quot;name&quot;:&quot;Alice&quot;,&quot;email&quot;:&quot;alice@example.com&quot;,&quot;age&quot;:25&#125;&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># POST 表单</span></span><br><span class="line">curl -X POST http://localhost:8000/login \</span><br><span class="line">  -d <span class="string">&quot;username=alice&amp;password=123456&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 文件上传</span></span><br><span class="line">curl -X POST http://localhost:8000/upload \</span><br><span class="line">  -F <span class="string">&quot;file=@test.txt&quot;</span> \</span><br><span class="line">  -F <span class="string">&quot;description=测试文件&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看响应头(包含状态码)</span></span><br><span class="line">curl -i http://localhost:8000/user/42</span><br></pre></td></tr></table></figure>
+<h2 id="Python-测试脚本">Python 测试脚本</h2>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">test_all</span>():</span><br><span class="line">    <span class="comment"># JSON API</span></span><br><span class="line">    resp = requests.post(<span class="string">&quot;http://localhost:8000/users&quot;</span>, json=&#123;</span><br><span class="line">        <span class="string">&quot;name&quot;</span>: <span class="string">&quot;Alice&quot;</span>,</span><br><span class="line">        <span class="string">&quot;email&quot;</span>: <span class="string">&quot;alice@example.com&quot;</span>,</span><br><span class="line">        <span class="string">&quot;age&quot;</span>: <span class="number">25</span></span><br><span class="line">    &#125;)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&quot;JSON: <span class="subst">&#123;resp.status_code&#125;</span> - <span class="subst">&#123;resp.text&#125;</span>&quot;</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># Form API</span></span><br><span class="line">    resp = requests.post(<span class="string">&quot;http://localhost:8000/login&quot;</span>, data=&#123;</span><br><span class="line">        <span class="string">&quot;username&quot;</span>: <span class="string">&quot;alice&quot;</span>,</span><br><span class="line">        <span class="string">&quot;password&quot;</span>: <span class="string">&quot;123456&quot;</span></span><br><span class="line">    &#125;)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&quot;Form: <span class="subst">&#123;resp.status_code&#125;</span> - <span class="subst">&#123;resp.text&#125;</span>&quot;</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># File Upload</span></span><br><span class="line">    <span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&quot;test.txt&quot;</span>, <span class="string">&quot;w&quot;</span>) <span class="keyword">as</span> f:</span><br><span class="line">        f.write(<span class="string">&quot;test content&quot;</span>)</span><br><span class="line">    <span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&quot;test.txt&quot;</span>, <span class="string">&quot;rb&quot;</span>) <span class="keyword">as</span> f:</span><br><span class="line">        resp = requests.post(<span class="string">&quot;http://localhost:8000/upload&quot;</span>,</span><br><span class="line">            files=&#123;<span class="string">&quot;file&quot;</span>: (<span class="string">&quot;test.txt&quot;</span>, f)&#125;,</span><br><span class="line">            data=&#123;<span class="string">&quot;description&quot;</span>: <span class="string">&quot;test&quot;</span>&#125;</span><br><span class="line">        )</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&quot;Upload: <span class="subst">&#123;resp.status_code&#125;</span> - <span class="subst">&#123;resp.text&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    test_all()</span><br></pre></td></tr></table></figure>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="https://yukizzc.github.io">ZZC</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="https://yukizzc.github.io/2026/04/22/computer/rocket/">https://yukizzc.github.io/2026/04/22/computer/rocket/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/web/">web</a><a class="post-meta__tags" href="/tags/rust/">rust</a></div><div class="post-share"><div class="social-share" data-image="/images/%E6%9D%A8%E5%A8%81%E5%88%A9.jpg" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/04/22/computer/rust%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/" title="rust网络编程"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">Previous</div><div class="info-item-2">rust网络编程</div></div><div class="info-2"><div class="info-item-1">模块概述 std::net 模块提供了 Rust 标准库中的网络编程功能，主要包括：  TCP：面向连接的可靠字节流协议 UDP：无连接的不可靠数据报协议 IP 地址：IPv4、IPv6 地址处理 Socket 地址：IP 地址 + 端口号的组合  特点：  同步 I/O 操作 线程安全的网络类型 与操作系统原生 socket 的轻量级封装  TCP 编程  面向连接：需要三次握手建立连接 可靠传输：保证数据顺序、完整性和重传 流量控制：防止发送方淹没接收方 字节流：无消息边界，需要应用层处理分包  TCP 协议特点  面向连接：需要三次握手建立连接 可靠传输：保证数据顺序、完整性和重传 流量控制：防止发送方淹没接收方 字节流：无消息边界，需要应用层处理分包  服务器端核心代码 123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263use std::io::&#123;Read, Write&#125;...</div></div></div></a><a class="pagination-related" href="/2026/04/02/computer/rust%E9%93%BE%E6%8E%A5%E5%BA%93/" title="rust链接库"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">Next</div><div class="info-item-2">rust链接库</div></div><div class="info-2"><div class="info-item-1">概念    特性 静态链接库 动态链接库     链接时机 编译时 运行时   代码整合 库代码被直接复制到最终的可执行文件中。 库代码存在于独立的文件中，可执行文件只记录依赖关系。   文件后缀 Linux/Unix: .a (Archive) Windows: .lib Linux/Unix: .so (Shared Object) Windows: .dll (Dynamic Link Library)   可执行文件大小 较大，因为包含了所有依赖的库代码。 较小，因为不包含库代码本身。   内存占用 可能更高，因为每个使用该库的程序都在内存中有自己的副本。 可能更低，因为多个程序可以共享内存中的同一份库代码。   部署便利性 简单。可执行文件是独立的，不需要额外文件。 复杂。必须确保目标系统上有正确版本的库文件。   版本更新 困难。需要重新编译整个程序才能更新库。 容易。替换 DLL/.so 文件即可更新库，但需注意版本兼容性。   兼容性问题 无（因为库已绑定）。 可能存在“DLL Hell”，即版本冲突或缺失。    在rust中是通过toml中的设置来选择库类型 ...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/04/22/computer/rust%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/" title="rust网络编程"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-04-22</div><div class="info-item-2">rust网络编程</div></div><div class="info-2"><div class="info-item-1">模块概述 std::net 模块提供了 Rust 标准库中的网络编程功能，主要包括：  TCP：面向连接的可靠字节流协议 UDP：无连接的不可靠数据报协议 IP 地址：IPv4、IPv6 地址处理 Socket 地址：IP 地址 + 端口号的组合  特点：  同步 I/O 操作 线程安全的网络类型 与操作系统原生 socket 的轻量级封装  TCP 编程  面向连接：需要三次握手建立连接 可靠传输：保证数据顺序、完整性和重传 流量控制：防止发送方淹没接收方 字节流：无消息边界，需要应用层处理分包  TCP 协议特点  面向连接：需要三次握手建立连接 可靠传输：保证数据顺序、完整性和重传 流量控制：防止发送方淹没接收方 字节流：无消息边界，需要应用层处理分包  服务器端核心代码 123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263use std::io::&#123;Read, Write&#125;...</div></div></div></a><a class="pagination-related" href="/2026/03/30/computer/rust%E6%B5%81%E7%A8%8B%E6%8E%A7%E5%88%B6/" title="rust流程控制"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-03-30</div><div class="info-item-2">rust流程控制</div></div><div class="info-2"><div class="info-item-1">条件判断 基本语句 12345678910111213141516171819// 基本 if 语句let number = 7;if number % 2 == 0 &#123;    println!(&quot;&#123;&#125; 是偶数&quot;, number);&#125; else &#123;    println!(&quot;&#123;&#125; 是奇数&quot;, number);&#125;// else if 多条件判断let score = 85;if score &gt;= 90 &#123;    println!(&quot;优秀&quot;);&#125; else if score &gt;= 80 &#123;    println!(&quot;良好&quot;);&#125; else if score &gt;= 60 &#123;    println!(&quot;及格&quot;);&#125; else &#123;    println!(&quot;不及格&quot;);&#125; 带返回值 Rust 是基...</div></div></div></a><a class="pagination-related" href="/2026/03/31/computer/rust%E6%B3%9B%E5%9E%8B%E4%B8%8E%E7%89%B9%E5%BE%81/" title="rust泛型与特征"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-03-31</div><div class="info-item-2">rust泛型与特征</div></div><div class="info-2"><div class="info-item-1">泛型 泛型允许定义可以处理多种类型的代码，避免重复编写相似的逻辑。泛型是 Rust 中实现代码复用和类型安全的核心机制。 核心优势：  消除重复代码（不写泛型就要为每种类型写一个函数） 编译时单态化，零运行时开销 保持类型安全，编译器会检查类型约束  函数中的泛型 在函数签名中使用泛型，可以创建适用于多种类型的函数。通常需要为泛型添加trait 约束，限制可接受的类型。 1234567891011121314151617181920212223242526// 找出最大值(需要类型实现 PartialOrd 才能比较)fn largest&lt;T: PartialOrd&gt;(list: &amp;[T]) -&gt; &amp;T &#123;    let mut largest = &amp;list[0];    for item in list &#123;        if item &gt; largest &#123;      // 只有实现了 PartialOrd 的类型才能用 &gt;            largest = item;       ...</div></div></div></a><a class="pagination-related" href="/2026/03/30/computer/rust%E5%87%BD%E6%95%B0/" title="rust函数"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-03-30</div><div class="info-item-2">rust函数</div></div><div class="info-2"><div class="info-item-1">函数 函数定义 Rust 支持函数指针类型（fn），可以将函数作为参数传递给其他函数。函数指针是一个具体类型，指向编译时已知的函数 123456789101112131415161718192021222324// 基本函数fn greet() &#123;    println!(&quot;Hello, world!&quot;);&#125;// 带参数的函数fn greet_name(name: &amp;str) &#123;    println!(&quot;Hello, &#123;&#125;!&quot;, name);&#125;// 带返回值的函数fn add(x: i32, y: i32) -&gt; i32 &#123;    x + y  // 最后一行是返回值,有分号&#125;// 使用 return 关键字fn add_with_return(x: i32, y: i32) -&gt; i32 &#123;    return x + y;  // 也可以显式返回&#125;// 返回多个值(使用元组)fn swap(x: i32, y: i3...</div></div></div></a><a class="pagination-related" href="/2024/07/26/computer/fastapi/" title="fastapi"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-07-26</div><div class="info-item-2">fastapi</div></div><div class="info-2"><div class="info-item-1">HTTP协议 基础概念 HTTP 协议是基于 TCP/IP 协议栈 的应用层协议，其有如下特点  无状态协议：每个请求独立，服务器不保留客户端状态 基于请求/响应模型：客户端发送请求，服务器返回响应 可扩展：通过头字段支持各种功能扩展 支持多种数据格式：通过 Content-Type 指定  Socket 的作用 Socket 的作用可以理解为**“通信的抽象接口”**，它在网络协议栈和应用层之间架起了一座桥梁，让开发者能够更简单地实现网络通信  Socket 位于应用层（用户进程）和传输层（TCP/UDP）之间，是一个抽象层 它屏蔽了底层协议（如 TCP/IP、ARP、物理介质等）的复杂性，开发者无需关心数据如何拆分、封装、传输，只需调用 Socket 提供的接口即可   URL 结构 一个完整的URL包括：协议、ip、端口、路径、参数 例如：https://www.baidu.com/s?wd=sanqiansi  https 是协议 www.baidu.com 是域名（DNS解析为IP） 端口默认 443（HTTPS）或 80（HTTP） /s 是路径 参数是 wd=san...</div></div></div></a><a class="pagination-related" href="/2026/04/02/computer/rust_python%E4%BA%92%E6%93%8D%E4%BD%9C/" title="rust_python互操作"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-04-02</div><div class="info-item-2">rust_python互操作</div></div><div class="info-2"><div class="info-item-1">FFI = Foreign Function Interface（外部函数接口） PyO3 是 Rust 生态中与 Python 交互的首选工具，核心特性：  双向调用：Rust 调用 Python，Python 调用 Rust 类型安全：编译时检查类型转换，避免运行时错误 零拷贝：支持直接内存访问，高性能数据传输 异步支持：与 async/await 无缝集成 GIL 管理：自动处理全局解释器锁，避免死锁  适用场景：  性能敏感模块用 Rust 重写 Python 调用现有 Rust 库 混合语言项目开发 计算密集型任务加速  Rust 编写 Python 动态库 环境配置 创建 lib 项目并配置 Cargo.toml： 12345678910111213141516[package]name = &quot;rust_core&quot;version = &quot;0.1.0&quot;edition = &quot;2021&quot;[lib]name = &quot;rust_core&quot;crate-type = [&quot;cdylib&quot;]...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/images/%E6%9D%A8%E5%A8%81%E5%88%A9.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ZZC</div><div class="author-info-description">计算机和金融方面的学习笔记，也会写一些个人随笔和诗歌</div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">59</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">28</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">5</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://gitee.com/yukizzc"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">框架概述</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">2.</span> <span class="toc-text">快速开始</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E9%A1%B9%E7%9B%AE"><span class="toc-number">2.1.</span> <span class="toc-text">创建项目</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B7%BB%E5%8A%A0%E4%BE%9D%E8%B5%96"><span class="toc-number">2.2.</span> <span class="toc-text">添加依赖</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E4%B8%AARocket%E7%A8%8B%E5%BA%8F"><span class="toc-number">2.3.</span> <span class="toc-text">第一个Rocket程序</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%90%E8%A1%8C%E5%92%8C%E6%B5%8B%E8%AF%95"><span class="toc-number">2.4.</span> <span class="toc-text">运行和测试</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">3.</span> <span class="toc-text">路由系统</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#HTTP%E6%96%B9%E6%B3%95%E7%BB%91%E5%AE%9A"><span class="toc-number">3.1.</span> <span class="toc-text">HTTP方法绑定</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8A%A8%E6%80%81%E8%B7%AF%E5%BE%84%E5%8F%82%E6%95%B0"><span class="toc-number">3.2.</span> <span class="toc-text">动态路径参数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E8%AF%A2%E5%8F%82%E6%95%B0"><span class="toc-number">3.3.</span> <span class="toc-text">查询参数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B7%AF%E7%94%B1%E4%BC%98%E5%85%88%E7%BA%A7"><span class="toc-number">3.4.</span> <span class="toc-text">路由优先级</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">4.</span> <span class="toc-text">请求处理</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#JSON%E6%95%B0%E6%8D%AE%E5%A4%84%E7%90%86"><span class="toc-number">4.1.</span> <span class="toc-text">JSON数据处理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A1%A8%E5%8D%95%E6%95%B0%E6%8D%AE%E5%A4%84%E7%90%86"><span class="toc-number">4.2.</span> <span class="toc-text">表单数据处理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0"><span class="toc-number">4.3.</span> <span class="toc-text">文件上传</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">5.</span> <span class="toc-text">响应生成</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9F%BA%E7%A1%80%E5%93%8D%E5%BA%94%E7%B1%BB%E5%9E%8B"><span class="toc-number">5.1.</span> <span class="toc-text">基础响应类型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%94%E5%9B%9E%E7%8A%B6%E6%80%81%E7%A0%81"><span class="toc-number">5.2.</span> <span class="toc-text">返回状态码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%87%8D%E5%AE%9A%E5%90%91"><span class="toc-number">5.3.</span> <span class="toc-text">重定向</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8-Result-%E5%A4%84%E7%90%86%E9%94%99%E8%AF%AF"><span class="toc-number">5.4.</span> <span class="toc-text">使用 Result 处理错误</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">6.</span> <span class="toc-text">状态管理</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E6%89%98%E7%AE%A1%E7%8A%B6%E6%80%81"><span class="toc-number">6.1.</span> <span class="toc-text">使用托管状态</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%8D%E6%9D%82%E7%8A%B6%E6%80%81%E7%9A%84%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8"><span class="toc-number">6.2.</span> <span class="toc-text">复杂状态的线程安全</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">7.</span> <span class="toc-text">错误处理</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%A8%E5%B1%80%E9%94%99%E8%AF%AF%E6%8D%95%E8%8E%B7%E5%99%A8%EF%BC%88Catcher%EF%BC%89"><span class="toc-number">7.1.</span> <span class="toc-text">全局错误捕获器（Catcher）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89%E9%94%99%E8%AF%AF%E5%93%8D%E5%BA%94"><span class="toc-number">7.2.</span> <span class="toc-text">自定义错误响应</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">8.</span> <span class="toc-text">模板渲染</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE%E6%A8%A1%E6%9D%BF%E6%94%AF%E6%8C%81"><span class="toc-number">8.1.</span> <span class="toc-text">配置模板支持</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E6%A8%A1%E6%9D%BF%E6%96%87%E4%BB%B6"><span class="toc-number">8.2.</span> <span class="toc-text">创建模板文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B8%B2%E6%9F%93%E6%A8%A1%E6%9D%BF"><span class="toc-number">8.3.</span> <span class="toc-text">渲染模板</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">9.</span> <span class="toc-text">文件服务</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9F%BA%E7%A1%80%E6%96%87%E4%BB%B6%E6%9C%8D%E5%8A%A1"><span class="toc-number">9.1.</span> <span class="toc-text">基础文件服务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%BA%E5%88%B6%E4%B8%8B%E8%BD%BD%EF%BC%88%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%B5%81%E6%96%B9%E5%BC%8F%EF%BC%89"><span class="toc-number">9.2.</span> <span class="toc-text">强制下载（二进制流方式）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%BA%E5%88%B6%E4%B8%8B%E8%BD%BD%EF%BC%88%E4%BF%9D%E7%95%99%E6%96%87%E4%BB%B6%E5%90%8D%EF%BC%89"><span class="toc-number">9.3.</span> <span class="toc-text">强制下载（保留文件名）</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">10.</span> <span class="toc-text">中间件（Fairing）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Fairing-%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F"><span class="toc-number">10.1.</span> <span class="toc-text">Fairing 的生命周期</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E7%8E%B0%E6%97%A5%E5%BF%97-Fairing"><span class="toc-number">10.2.</span> <span class="toc-text">实现日志 Fairing</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E7%8E%B0%E8%AE%A1%E6%97%B6-Fairing"><span class="toc-number">10.3.</span> <span class="toc-text">实现计时 Fairing</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8-Fairing"><span class="toc-number">10.4.</span> <span class="toc-text">使用 Fairing</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">11.</span> <span class="toc-text">异步编程</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Rocket-%E7%9A%84%E5%BC%82%E6%AD%A5%E6%A8%A1%E5%9E%8B"><span class="toc-number">11.1.</span> <span class="toc-text">Rocket 的异步模型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%82%E6%AD%A5%E6%96%87%E4%BB%B6%E6%93%8D%E4%BD%9C"><span class="toc-number">11.2.</span> <span class="toc-text">异步文件操作</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CPU-%E5%AF%86%E9%9B%86%E5%9E%8B%E4%BB%BB%E5%8A%A1"><span class="toc-number">11.3.</span> <span class="toc-text">CPU 密集型任务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B9%B6%E5%8F%91%E8%AF%B7%E6%B1%82"><span class="toc-number">11.4.</span> <span class="toc-text">并发请求</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">12.</span> <span class="toc-text">附录：常用测试命令</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#curl-%E5%91%BD%E4%BB%A4"><span class="toc-number">12.1.</span> <span class="toc-text">curl 命令</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Python-%E6%B5%8B%E8%AF%95%E8%84%9A%E6%9C%AC"><span class="toc-number">12.2.</span> <span class="toc-text">Python 测试脚本</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/12/31/essay/2026/" title="2026">2026</a><time datetime="2026-12-30T16:00:00.000Z" title="Created 2026-12-31 00:00:00">2026-12-31</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/04/22/computer/rocket/" title="rocket">rocket</a><time datetime="2026-04-21T16:00:00.000Z" title="Created 2026-04-22 00:00:00">2026-04-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/04/22/computer/rust%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/" title="rust网络编程">rust网络编程</a><time datetime="2026-04-21T16:00:00.000Z" title="Created 2026-04-22 00:00:00">2026-04-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/04/02/computer/rust_python%E4%BA%92%E6%93%8D%E4%BD%9C/" title="rust_python互操作">rust_python互操作</a><time datetime="2026-04-01T16:00:00.000Z" title="Created 2026-04-02 00:00:00">2026-04-02</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/04/02/computer/rust%E5%A4%9A%E7%BA%BF%E7%A8%8B/" title="rust多线程">rust多线程</a><time datetime="2026-04-01T16:00:00.000Z" title="Created 2026-04-02 00:00:00">2026-04-02</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By ZZC</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(async () => {
+  const showKatex = () => {
+    document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
+  }
+
+  if (!window.katex_js_css) {
+    window.katex_js_css = true
+    await btf.getCSS('https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/katex.min.css')
+    if (false) {
+      await btf.getScript('https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/contrib/copy-tex.min.js')
+    }
+  }
+
+  showKatex()
+})()</script><script>(() => {
+  const parseViewBox = viewBox => {
+    if (!viewBox) return null
+    const parts = viewBox.trim().split(/[\s,]+/).map(n => Number(n))
+    if (parts.length !== 4 || parts.some(n => Number.isNaN(n))) return null
+    return parts
+  }
+
+  const getSvgViewBox = svg => {
+    const attr = parseViewBox(svg.getAttribute('viewBox'))
+    if (attr) return attr
+
+    // Fallback: use bbox to build a viewBox
+    try {
+      const bbox = svg.getBBox()
+      if (bbox && bbox.width && bbox.height) return [bbox.x, bbox.y, bbox.width, bbox.height]
+    } catch (e) {
+      // getBBox may fail on some edge cases; ignore
+    }
+
+    const w = Number(svg.getAttribute('width')) || 0
+    const h = Number(svg.getAttribute('height')) || 0
+    if (w > 0 && h > 0) return [0, 0, w, h]
+    return [0, 0, 100, 100]
+  }
+
+  const setSvgViewBox = (svg, vb) => {
+    svg.setAttribute('viewBox', `${vb[0]} ${vb[1]} ${vb[2]} ${vb[3]}`)
+  }
+
+  const clamp = (v, min, max) => Math.max(min, Math.min(max, v))
+
+  const openSvgInNewTab = ({ source, initViewBox }) => {
+    const getClonedSvg = () => {
+      if (typeof source === 'string') {
+        const template = document.createElement('template')
+        template.innerHTML = source.trim()
+        const svg = template.content.querySelector('svg')
+        return svg ? svg.cloneNode(true) : null
+      }
+      if (source && typeof source.cloneNode === 'function') {
+        return source.cloneNode(true)
+      }
+      return null
+    }
+
+    const clone = getClonedSvg()
+    if (!clone) return
+    if (initViewBox && initViewBox.length === 4) {
+      clone.setAttribute('viewBox', initViewBox.join(' '))
+    }
+    if (!clone.getAttribute('xmlns')) clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+    if (!clone.getAttribute('xmlns:xlink') && clone.outerHTML.includes('xlink:')) {
+      clone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink')
+    }
+    // inject background to match current theme
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
+    const bg = getComputedStyle(document.body).backgroundColor || (isDark ? '#1e1e1e' : '#ffffff')
+    if (!clone.style.background) clone.style.background = bg
+
+    const serializer = new XMLSerializer()
+    const svgSource = serializer.serializeToString(clone)
+    const htmlSource = `<!doctype html><html><head><meta charset="utf-8" />
+      <style>
+        html, body { width: 100%; height: 100%; margin: 0; display: flex; align-items: center; justify-content: center; background: ${bg}; }
+        svg { max-width: 100%; max-height: 100%; height: auto; width: auto; }
+      </style>
+      </head><body>${svgSource}</body></html>`
+    const blob = new Blob([htmlSource], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank', 'noopener')
+    setTimeout(() => URL.revokeObjectURL(url), 30000)
+  }
+
+  const attachMermaidViewerButton = wrap => {
+    let btn = wrap.querySelector('.mermaid-open-btn')
+    if (!btn) {
+      btn = document.createElement('button')
+      btn.type = 'button'
+      btn.className = 'mermaid-open-btn'
+      wrap.appendChild(btn)
+    }
+
+    btn.innerHTML = '<i class="fa fa-search fa-fw" aria-hidden="true"></i>'
+
+    if (!btn.__mermaidViewerBound) {
+      btn.addEventListener('click', e => {
+        e.preventDefault()
+        e.stopPropagation()
+        const svg = wrap.__mermaidOriginalSvg || wrap.querySelector('svg')
+        if (!svg) return
+        const initViewBox = wrap.__mermaidInitViewBox
+        if (typeof svg === 'string') {
+          openSvgInNewTab({ source: svg, initViewBox })
+          return
+        }
+        openSvgInNewTab({ source: svg, initViewBox })
+      })
+      btn.__mermaidViewerBound = true
+    }
+  }
+
+  // Zoom around a point (px, py) in the SVG viewport (in viewBox coordinates)
+  const zoomAtPoint = (vb, factor, px, py) => {
+    const w = vb[2] * factor
+    const h = vb[3] * factor
+    const nx = px - (px - vb[0]) * factor
+    const ny = py - (py - vb[1]) * factor
+    return [nx, ny, w, h]
+  }
+
+  const initMermaidGestures = wrap => {
+    const svg = wrap.querySelector('svg')
+    if (!svg) return
+
+    // Ensure viewBox exists so gestures always work
+    const initVb = getSvgViewBox(svg)
+    wrap.__mermaidInitViewBox = initVb
+    wrap.__mermaidCurViewBox = initVb.slice()
+    setSvgViewBox(svg, initVb)
+
+    // Avoid binding multiple times on themeChange/pjax
+    if (wrap.__mermaidGestureBound) return
+    wrap.__mermaidGestureBound = true
+
+    // Helper: map client (viewport) coordinate -> viewBox coordinate
+    const clientToViewBox = (clientX, clientY) => {
+      const rect = svg.getBoundingClientRect()
+      const vb = wrap.__mermaidCurViewBox || getSvgViewBox(svg)
+      const x = vb[0] + (clientX - rect.left) * (vb[2] / rect.width)
+      const y = vb[1] + (clientY - rect.top) * (vb[3] / rect.height)
+      return { x, y, rect, vb }
+    }
+
+    const state = {
+      pointers: new Map(),
+      startVb: null,
+      startDist: 0,
+      startCenter: null
+    }
+
+    const clampVb = vb => {
+      const init = wrap.__mermaidInitViewBox || vb
+      const minW = init[2] * 0.1
+      const maxW = init[2] * 10
+      const minH = init[3] * 0.1
+      const maxH = init[3] * 10
+      vb[2] = clamp(vb[2], minW, maxW)
+      vb[3] = clamp(vb[3], minH, maxH)
+      return vb
+    }
+
+    const setCurVb = vb => {
+      vb = clampVb(vb)
+      wrap.__mermaidCurViewBox = vb
+      setSvgViewBox(svg, vb)
+    }
+
+    const onPointerDown = e => {
+      // Allow only primary button for mouse
+      if (e.pointerType === 'mouse' && e.button !== 0) return
+      svg.setPointerCapture(e.pointerId)
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+      if (state.pointers.size === 1) {
+        state.startVb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+      } else if (state.pointers.size === 2) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        state.startDist = Math.hypot(dx, dy)
+        state.startVb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+        state.startCenter = { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 }
+      }
+    }
+
+    const onPointerMove = e => {
+      if (!state.pointers.has(e.pointerId)) return
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+      // Pan with 1 pointer
+      if (state.pointers.size === 1 && state.startVb) {
+        const p = [...state.pointers.values()][0]
+        const prev = { x: e.clientX - e.movementX, y: e.clientY - e.movementY }
+        // movementX/Y unreliable on touch, compute from stored last position
+        const last = wrap.__mermaidLastSinglePointer || p
+        const dxClient = p.x - last.x
+        const dyClient = p.y - last.y
+        wrap.__mermaidLastSinglePointer = p
+
+        const { rect } = clientToViewBox(p.x, p.y)
+        const vb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+        const dx = dxClient * (vb[2] / rect.width)
+        const dy = dyClient * (vb[3] / rect.height)
+        setCurVb([vb[0] - dx, vb[1] - dy, vb[2], vb[3]])
+        return
+      }
+
+      // Pinch zoom with 2 pointers
+      if (state.pointers.size === 2 && state.startVb && state.startDist > 0) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        const dist = Math.hypot(dx, dy)
+        if (!dist) return
+        const factor = state.startDist / dist // dist bigger => zoom in (viewBox smaller)
+
+        const cx = (pts[0].x + pts[1].x) / 2
+        const cy = (pts[0].y + pts[1].y) / 2
+        const centerClient = { x: cx, y: cy }
+
+        const pxy = clientToViewBox(centerClient.x, centerClient.y)
+        const cpx = pxy.x
+        const cpy = pxy.y
+
+        const vb = zoomAtPoint(state.startVb, factor, cpx, cpy)
+        setCurVb(vb)
+      }
+    }
+
+    const onPointerUpOrCancel = e => {
+      state.pointers.delete(e.pointerId)
+      if (state.pointers.size === 0) {
+        state.startVb = null
+        state.startDist = 0
+        state.startCenter = null
+        wrap.__mermaidLastSinglePointer = null
+      } else if (state.pointers.size === 1) {
+        // reset single pointer baseline to avoid jump
+        wrap.__mermaidLastSinglePointer = [...state.pointers.values()][0]
+      }
+    }
+
+    // Wheel zoom (mouse/trackpad)
+    const onWheel = e => {
+      // ctrlKey on mac trackpad pinch; we treat both as zoom
+      e.preventDefault()
+      const delta = e.deltaY
+      const zoomFactor = delta > 0 ? 1.1 : 0.9
+      const { x, y } = clientToViewBox(e.clientX, e.clientY)
+      const vb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+      setCurVb(zoomAtPoint(vb, zoomFactor, x, y))
+    }
+
+    const onDblClick = () => {
+      const init = wrap.__mermaidInitViewBox
+      if (!init) return
+      wrap.__mermaidCurViewBox = init.slice()
+      setSvgViewBox(svg, init)
+    }
+
+    svg.addEventListener('pointerdown', onPointerDown)
+    svg.addEventListener('pointermove', onPointerMove)
+    svg.addEventListener('pointerup', onPointerUpOrCancel)
+    svg.addEventListener('pointercancel', onPointerUpOrCancel)
+    svg.addEventListener('wheel', onWheel, { passive: false })
+    svg.addEventListener('dblclick', onDblClick)
+  }
+
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+
+      // Clear old render (themeChange/pjax will rerun)
+      const oldSvg = item.querySelector('svg')
+      if (oldSvg) oldSvg.remove()
+      item.__mermaidGestureBound = false
+
+      const config = mermaidSrc.dataset.config ? JSON.parse(mermaidSrc.dataset.config) : {}
+      if (!config.theme) {
+        config.theme = theme
+      }
+      const mermaidThemeConfig = `%%{init: ${JSON.stringify(config)}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+        if (true) initMermaidGestures(item)
+        item.__mermaidOriginalSvg = svg
+        if (true) attachMermaidViewerButton(item)
+      }
+
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.12.2/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">Search</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  Loading Database</span></div><div class="local-search-input"><input placeholder="searching..." type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.5.4"></script></div></div></body></html>

@@ -1,0 +1,891 @@
+<!DOCTYPE html><html lang="zh-C" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>gplearn | Z</title><meta name="author" content="ZZC"><meta name="copyright" content="ZZC"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="基本概念 gplearn 是一个基于**遗传编程（Genetic Programming, GP）**的 Python 库，用于自动生成符号表达式（symbolic expressions）。它受到经典遗传编程工具（如 GPLearn）的启发，特别适合从数据中挖掘复杂的数学关系，比如量化交易中的因子生成 遗传编程是遗传算法（Genetic Algorithm, GA）的一种变种，核心思想模仿自然进">
+<meta property="og:type" content="article">
+<meta property="og:title" content="gplearn">
+<meta property="og:url" content="https://yukizzc.github.io/2025/03/13/finance/gplearn/index.html">
+<meta property="og:site_name" content="Z">
+<meta property="og:description" content="基本概念 gplearn 是一个基于**遗传编程（Genetic Programming, GP）**的 Python 库，用于自动生成符号表达式（symbolic expressions）。它受到经典遗传编程工具（如 GPLearn）的启发，特别适合从数据中挖掘复杂的数学关系，比如量化交易中的因子生成 遗传编程是遗传算法（Genetic Algorithm, GA）的一种变种，核心思想模仿自然进">
+<meta property="og:locale">
+<meta property="og:image" content="https://yukizzc.github.io/images/%E6%9D%A8%E5%A8%81%E5%88%A9.jpg">
+<meta property="article:published_time" content="2025-03-12T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-03-29T07:13:01.926Z">
+<meta property="article:author" content="ZZC">
+<meta property="article:tag" content="因子">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://yukizzc.github.io/images/%E6%9D%A8%E5%A8%81%E5%88%A9.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "gplearn",
+  "url": "https://yukizzc.github.io/2025/03/13/finance/gplearn/",
+  "image": "https://yukizzc.github.io/images/%E6%9D%A8%E5%A8%81%E5%88%A9.jpg",
+  "datePublished": "2025-03-12T16:00:00.000Z",
+  "dateModified": "2026-03-29T07:13:01.926Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "ZZC",
+      "url": "https://yukizzc.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://yukizzc.github.io/2025/03/13/finance/gplearn/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"No results found for: ${query}","hits_stats":"${hits} articles found"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":true,"highlightMacStyle":true},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'gplearn',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="bg-animation" id="web_bg" style="background-color: #E8F4F8;"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/images/%E6%9D%A8%E5%A8%81%E5%88%A9.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">59</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">28</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">5</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><span class="site-page group"><span> 分类</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/categories/finance/"><i class="fa-fw fas fa-chart-line"></i><span> 金融</span></a></li><li><a class="site-page child" href="/categories/computer/"><i class="fa-fw fas fa-code"></i><span> 计算机</span></a></li><li><a class="site-page child" href="/categories/essay/"><i class="fa-fw fas fa-heart"></i><span> 随文</span></a></li><li><a class="site-page child" href="/categories/mathematical/"><i class="fa-fw fas fa-atom"></i><span> 数理</span></a></li><li><a class="site-page child" href="/categories/misc/"><i class="fa-fw fas fa-comment-dots"></i><span> 其他</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-calendar-alt"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg fixed" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Z</span></a><a class="nav-page-title" href="/"><span class="site-name">gplearn</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  Back to Home</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> Search</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><span class="site-page group"><span> 分类</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/categories/finance/"><i class="fa-fw fas fa-chart-line"></i><span> 金融</span></a></li><li><a class="site-page child" href="/categories/computer/"><i class="fa-fw fas fa-code"></i><span> 计算机</span></a></li><li><a class="site-page child" href="/categories/essay/"><i class="fa-fw fas fa-heart"></i><span> 随文</span></a></li><li><a class="site-page child" href="/categories/mathematical/"><i class="fa-fw fas fa-atom"></i><span> 数理</span></a></li><li><a class="site-page child" href="/categories/misc/"><i class="fa-fw fas fa-comment-dots"></i><span> 其他</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-calendar-alt"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">gplearn</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2025-03-12T16:00:00.000Z" title="Created 2025-03-13 00:00:00">2025-03-13</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2026-03-29T07:13:01.926Z" title="Updated 2026-03-29 15:13:01">2026-03-29</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/finance/">finance</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1>基本概念</h1>
+<p>gplearn 是一个基于**遗传编程（Genetic Programming, GP）**的 Python 库，用于自动生成符号表达式（symbolic expressions）。它受到经典遗传编程工具（如 GPLearn）的启发，特别适合从数据中挖掘复杂的数学关系，比如量化交易中的因子生成</p>
+<p>遗传编程是遗传算法（Genetic Algorithm, GA）的一种变种，核心思想模仿自然进化：</p>
+<ul>
+<li><strong>种群（Population）</strong>: 一组随机生成的候选解（在这里是数学表达式）</li>
+<li><strong>适应度（Fitness）</strong>: 每个解的质量评分，通常是目标函数的误差（如 MSE）或收益指标</li>
+<li>进化操作
+<ul>
+<li><strong>选择（Selection）</strong>: 挑选适应度高的个体</li>
+<li><strong>交叉（Crossover）</strong>: 将两个表达式的子树交换，生成新表达式</li>
+<li><strong>变异（Mutation）</strong>: 随机改变表达式的部分结构（如替换操作符或变量）</li>
+</ul>
+</li>
+<li><strong>迭代进化</strong>: 通过多代进化，找到最优解</li>
+</ul>
+<p><strong>gplearn</strong> 的工作流程</p>
+<ol>
+<li><strong>初始化种群</strong>: 随机生成大量数学表达式（如 X0 + X1, sin(X2) 等）</li>
+<li><strong>评估适应度</strong>: 对每个表达式计算目标值（如预测误差）</li>
+<li><strong>进化迭代</strong>: 通过选择、交叉和变异生成新一代种群</li>
+<li><strong>终止条件</strong>: 达到最大代数或适应度满足阈值后停止</li>
+<li><strong>输出最佳表达式</strong>: 返回适应度最高的符号表达式</li>
+</ol>
+<h1>基本设置</h1>
+<p>gplearn 是一个基于遗传编程（Genetic Programming, GP）的 Python 库，提供了三个核心类，用于不同的任务场景。它们都利用遗传编程的进化机制（选择、交叉、变异）从数据中生成符号表达式，但目标和应用方向各有侧重</p>
+<h2 id="SymbolicRegressor">SymbolicRegressor</h2>
+<h3 id="概述">概述</h3>
+<ul>
+<li><strong>功能</strong>: 用于回归任务，通过遗传编程生成一个符号表达式来预测连续的目标值</li>
+<li><strong>适用场景</strong>: 在量化交易中生成因子表达式，预测股票收益率、价格变化等连续变量</li>
+<li><strong>输出</strong>: 一个最优的数学表达式（如 add(X0, mul(X1, 2))），直接用于预测</li>
+</ul>
+<h3 id="核心参数">核心参数</h3>
+<ol>
+<li>population_size: 整数，默认 1000
+<ul>
+<li>定义每代种群中候选表达式的数量。</li>
+<li>越大搜索范围越广，但计算成本增加</li>
+</ul>
+</li>
+<li>generations: 整数，默认 20
+<ul>
+<li>进化迭代的次数</li>
+<li>代数越多，可能找到更优解，但也可能过拟合</li>
+</ul>
+</li>
+<li>function_set: 元组或列表，默认 (‘add’, ‘sub’, ‘mul’, ‘div’)
+<ul>
+<li>指定表达式中可用的数学函数，例如 ‘sqrt’、‘log’、‘sin’</li>
+<li>支持自定义函数</li>
+</ul>
+</li>
+<li>metric: 字符串或自定义函数，默认 ‘mse’
+<ul>
+<li>适应度评估指标：
+<ul>
+<li>‘mse’: 均方误差</li>
+<li>‘rmse’: 均方根误差</li>
+<li>‘mae’: 平均绝对误差</li>
+<li>可自定义（如夏普比率）</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>tournament_size: 整数，默认 20
+<ul>
+<li>锦标赛选择时每次比较的个体数</li>
+<li>值越大，选择压力越大，收敛更快</li>
+</ul>
+</li>
+<li>stopping_criteria: 浮点数，默认 0.0
+<ul>
+<li>当最佳适应度小于此值时停止进化</li>
+<li>例如设为 0.01，表示 MSE &lt; 0.01 时结束</li>
+</ul>
+</li>
+<li>const_range: 元组，默认 (-1.0, 1.0)
+<ul>
+<li>表达式中随机常数的取值范围</li>
+<li>可设为 (0, 100) 以生成更大常数</li>
+</ul>
+</li>
+<li>init_depth: 元组，默认 (2, 6)
+<ul>
+<li>初始表达式树的深度范围</li>
+<li>控制初始种群的复杂度</li>
+</ul>
+</li>
+<li>p_crossover: 浮点数，默认 0.9
+<ul>
+<li>子代通过交叉操作生成的概率</li>
+<li>值高则更倾向于组合现有表达式</li>
+</ul>
+</li>
+<li>p_subtree_mutation: 浮点数，默认 0.01
+<ul>
+<li>子树变异的概率，随机替换表达式的一个子树</li>
+</ul>
+</li>
+<li>parsimony_coefficient: 浮点数，默认 0.0
+<ul>
+<li>惩罚复杂表达式的系数，值越大越倾向于简单表达式</li>
+</ul>
+</li>
+<li>verbose: 整数，默认 0
+<ul>
+<li>是否显示进化过程，设为 1 显示每代统计</li>
+</ul>
+</li>
+<li>random_state: 整数或 None，默认 None
+<ul>
+<li>随机种子，确保结果可复现</li>
+</ul>
+</li>
+</ol>
+<h3 id="补充说明">补充说明</h3>
+<ul>
+<li><strong>SymbolicRegressor</strong> 假设输入 X 是特征矩阵，y 是连续目标值</li>
+<li>训练后，gp._program 属性返回最佳表达式</li>
+</ul>
+<h3 id="例子">例子</h3>
+<p><strong>目标</strong>: 预测未来 1 日收益率</p>
+<p><strong>场景</strong>: 用收盘价、均线等特征生成一个因子表达式，预测下一交易日的收益率</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">from</span> gplearn.genetic <span class="keyword">import</span> SymbolicRegressor</span><br><span class="line"></span><br><span class="line"><span class="comment"># 数据准备</span></span><br><span class="line">data = df.copy()</span><br><span class="line">data[<span class="string">&#x27;Returns&#x27;</span>] = data[<span class="string">&#x27;close&#x27;</span>].pct_change().shift(-<span class="number">1</span>)  <span class="comment"># 未来1日收益率</span></span><br><span class="line">data[<span class="string">&#x27;MA5&#x27;</span>] = data[<span class="string">&#x27;close&#x27;</span>].rolling(<span class="number">5</span>).mean()           <span class="comment"># 5日均线</span></span><br><span class="line">data[<span class="string">&#x27;MA20&#x27;</span>] = data[<span class="string">&#x27;close&#x27;</span>].rolling(<span class="number">20</span>).mean()         <span class="comment"># 20日均线</span></span><br><span class="line">data[<span class="string">&#x27;Vol&#x27;</span>] = data[<span class="string">&#x27;volume&#x27;</span>]                            <span class="comment"># 成交量</span></span><br><span class="line">data = data.dropna()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 输入特征和目标</span></span><br><span class="line">X = data[[<span class="string">&#x27;close&#x27;</span>, <span class="string">&#x27;MA5&#x27;</span>, <span class="string">&#x27;MA20&#x27;</span>, <span class="string">&#x27;Vol&#x27;</span>]].values</span><br><span class="line">y = data[<span class="string">&#x27;Returns&#x27;</span>].values</span><br><span class="line"></span><br><span class="line"><span class="comment"># 初始化 SymbolicRegressor</span></span><br><span class="line">regressor = SymbolicRegressor(</span><br><span class="line">    population_size=<span class="number">1000</span>,          <span class="comment"># 种群大小</span></span><br><span class="line">    generations=<span class="number">10</span>,               <span class="comment"># 进化10代</span></span><br><span class="line">    tournament_size=<span class="number">20</span>,           <span class="comment"># 锦标赛选择</span></span><br><span class="line">    function_set=(<span class="string">&#x27;add&#x27;</span>, <span class="string">&#x27;sub&#x27;</span>, <span class="string">&#x27;mul&#x27;</span>, <span class="string">&#x27;div&#x27;</span>, <span class="string">&#x27;sqrt&#x27;</span>, <span class="string">&#x27;log&#x27;</span>),  <span class="comment"># 函数集</span></span><br><span class="line">    metric=<span class="string">&#x27;mse&#x27;</span>,                 <span class="comment"># 优化均方误差</span></span><br><span class="line">    const_range=(-<span class="number">1</span>, <span class="number">1</span>),          <span class="comment"># 常数范围</span></span><br><span class="line">    init_depth=(<span class="number">2</span>, <span class="number">4</span>),            <span class="comment"># 初始深度</span></span><br><span class="line">    verbose=<span class="number">1</span>                     <span class="comment"># 显示进化过程</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 训练模型</span></span><br><span class="line">regressor.fit(X, y)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 输出结果</span></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;生成的因子表达式:&quot;</span>, regressor._program)</span><br></pre></td></tr></table></figure>
+<h2 id="SymbolicTransformer">SymbolicTransformer</h2>
+<h3 id="概述-2">概述</h3>
+<ul>
+<li><strong>功能</strong>: 用于特征生成，从输入数据中自动创建多个新的符号表达式作为特征，而不是直接预测目标</li>
+<li><strong>适用场景</strong>: 在量化中生成一组潜在因子，供后续模型（如线性回归、机器学习）使用</li>
+<li><strong>输出</strong>: 一组最佳表达式（数量由 n_components 决定），转化为新的特征矩阵</li>
+</ul>
+<h3 id="核心参数-2">核心参数</h3>
+<ol>
+<li>n_components: 整数，默认 10
+<ul>
+<li>指定生成的特征（表达式）数量</li>
+<li>例如设为 5，返回 5 个最佳特征</li>
+</ul>
+</li>
+<li>population_size: 整数，默认 1000
+<ul>
+<li>每代种群中候选表达式的数量</li>
+<li>与回归类相同，但影响特征多样性</li>
+</ul>
+</li>
+<li>generations: 整数，默认 20
+<ul>
+<li>进化代数，决定特征生成的迭代次数</li>
+</ul>
+</li>
+<li>function_set: 元组或列表，默认 (‘add’, ‘sub’, ‘mul’, ‘div’)
+<ul>
+<li>可用的数学操作符，支持扩展（如 ‘log’、‘exp’）</li>
+</ul>
+</li>
+<li>hall_of_fame: 整数，默认 100
+<ul>
+<li>保存的最佳个体数量，从中挑选 n_components 个特征。</li>
+<li>值越大，保留的优秀表达式越多。</li>
+</ul>
+</li>
+<li>tournament_size: 整数，默认 20
+<ul>
+<li>锦标赛选择的大小，影响进化速度</li>
+</ul>
+</li>
+<li>metric: 字符串或自定义函数，默认 ‘pearson’
+<ul>
+<li>特征选择的适应度指标：
+<ul>
+<li>‘pearson’: 皮尔逊相关系数（与目标的相关性）</li>
+<li>‘spearman’: 斯皮尔曼相关系数</li>
+<li>可自定义</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>p_crossover: 浮点数，默认 0.9
+<ul>
+<li>交叉操作的概率，生成新特征的倾向性</li>
+</ul>
+</li>
+<li>p_point_mutation: 浮点数，默认 0.01
+<ul>
+<li>点变异的概率，随机替换单个节点</li>
+</ul>
+</li>
+<li>init_method: 字符串，默认 ‘half and half’
+<ul>
+<li>初始种群生成方式：
+<ul>
+<li>‘grow’: 随机生长</li>
+<li>‘full’: 满树生成</li>
+<li>‘half and half’: 混合模式</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>verbose: 整数，默认 0
+<ul>
+<li>是否打印进化日志</li>
+</ul>
+</li>
+<li>random_state: 整数或 None，默认 None
+<ul>
+<li>控制随机性</li>
+</ul>
+</li>
+</ol>
+<h3 id="补充说明-2">补充说明</h3>
+<ul>
+<li><strong>SymbolicTransformer</strong> 不需要目标 y（除非自定义 metric），主要基于特征间的关系生成表达式</li>
+<li>使用 fit_transform(X) 返回新特征矩阵</li>
+</ul>
+<h3 id="例子-2">例子</h3>
+<p><strong>目标</strong>: 生成多个新特征（因子）</p>
+<p><strong>场景</strong>: 从股票的原始特征中生成 3 个新因子，供后续分析或模型使用</p>
+<p>gplearn版本过老不更新所以和新版sklearn又不兼容的地方，对于transformer需要改动<code>D:\Python\Python310\lib\site-packages\gplearn\genetic.py</code>这个文件</p>
+<p>1、修改fit函数中的<code>X,y=</code>这一行程序，用后面的那一行替换</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> sklearn.utils.validation <span class="keyword">import</span> check_X_y</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">fit</span>(<span class="params">self, X, y, sample_weight=<span class="literal">None</span></span>):</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">if</span> <span class="variable language_">self</span>._is_classifier():</span><br><span class="line">        ...</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        X, y = <span class="variable language_">self</span>._validate_data(X, y, y_numeric=<span class="literal">True</span>)  <span class="comment"># 第 312 行</span></span><br><span class="line">    ...</span><br><span class="line">    </span><br><span class="line"><span class="comment"># 替换的代码</span></span><br><span class="line">X, y = check_X_y(X, y, accept_sparse=<span class="literal">False</span>, y_numeric=<span class="literal">True</span>)</span><br></pre></td></tr></table></figure>
+<p>2、修改transforme函数</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 原函数</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">transform</span>(<span class="params">self, X</span>):</span><br><span class="line">    X = check_array(X)</span><br><span class="line">    _, n_features = X.shape</span><br><span class="line">    <span class="keyword">if</span> <span class="variable language_">self</span>.n_features_in_ != n_features:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(...)</span><br><span class="line">    X_new = np.array([gp.execute(X) <span class="keyword">for</span> gp <span class="keyword">in</span> <span class="variable language_">self</span>._best_programs]).T</span><br><span class="line">    <span class="keyword">return</span> X_new</span><br><span class="line"><span class="comment"># 新函数</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">transform</span>(<span class="params">self, X</span>):</span><br><span class="line">    X = check_array(X)</span><br><span class="line">    X_new = np.array([gp.execute(X) <span class="keyword">for</span> gp <span class="keyword">in</span> <span class="variable language_">self</span>._best_programs]).T</span><br><span class="line">    <span class="keyword">return</span> X_new</span><br></pre></td></tr></table></figure>
+<p>最后例子如下</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">from</span> gplearn.genetic <span class="keyword">import</span> SymbolicTransformer</span><br><span class="line"></span><br><span class="line">data = df.copy()</span><br><span class="line">data[<span class="string">&#x27;MA5&#x27;</span>] = data[<span class="string">&#x27;close&#x27;</span>].rolling(<span class="number">5</span>).mean()    <span class="comment"># 5日均线</span></span><br><span class="line">data[<span class="string">&#x27;MA20&#x27;</span>] = data[<span class="string">&#x27;close&#x27;</span>].rolling(<span class="number">20</span>).mean()  <span class="comment"># 20日均线</span></span><br><span class="line">data[<span class="string">&#x27;Returns&#x27;</span>] = data[<span class="string">&#x27;close&#x27;</span>].pct_change().shift(-<span class="number">1</span>)  <span class="comment"># 目标变量：未来1日收益率</span></span><br><span class="line">data = data.dropna()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 输入特征</span></span><br><span class="line">X = data[[<span class="string">&#x27;close&#x27;</span>, <span class="string">&#x27;MA5&#x27;</span>, <span class="string">&#x27;MA20&#x27;</span>]].values</span><br><span class="line">y = data[<span class="string">&#x27;Returns&#x27;</span>].values  <span class="comment"># 添加目标变量</span></span><br><span class="line"><span class="comment"># 初始化 SymbolicTransformer</span></span><br><span class="line">transformer = SymbolicTransformer(</span><br><span class="line">    population_size=<span class="number">500</span>,           <span class="comment"># 种群大小</span></span><br><span class="line">    generations=<span class="number">10</span>,               <span class="comment"># 进化10代</span></span><br><span class="line">    n_components=<span class="number">3</span>,               <span class="comment"># 生成3个新特征</span></span><br><span class="line">    hall_of_fame=<span class="number">50</span>,              <span class="comment"># 保存50个最佳个体</span></span><br><span class="line">    function_set=(<span class="string">&#x27;add&#x27;</span>, <span class="string">&#x27;sub&#x27;</span>, <span class="string">&#x27;mul&#x27;</span>, <span class="string">&#x27;div&#x27;</span>),  <span class="comment"># 函数集</span></span><br><span class="line">    metric=<span class="string">&#x27;pearson&#x27;</span>,             <span class="comment"># 优化与目标的相关性</span></span><br><span class="line">    tournament_size=<span class="number">10</span>,           <span class="comment"># 锦标赛选择</span></span><br><span class="line">    verbose=<span class="number">1</span>                     <span class="comment"># 显示过程</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 训练并生成新特征</span></span><br><span class="line">new_features = transformer.fit_transform(X,y)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 将新特征加入数据框</span></span><br><span class="line">data[[<span class="string">&#x27;Factor1&#x27;</span>, <span class="string">&#x27;Factor2&#x27;</span>, <span class="string">&#x27;Factor3&#x27;</span>]] = new_features</span><br><span class="line"></span><br><span class="line"><span class="comment"># 输出生成的表达式</span></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;生成的特征表达式:&quot;</span>)</span><br><span class="line"><span class="keyword">for</span> i, program <span class="keyword">in</span> <span class="built_in">enumerate</span>(transformer):</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&quot;Factor <span class="subst">&#123;i+<span class="number">1</span>&#125;</span>: <span class="subst">&#123;program&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看新特征</span></span><br><span class="line"><span class="built_in">print</span>(data[[<span class="string">&#x27;close&#x27;</span>, <span class="string">&#x27;MA5&#x27;</span>, <span class="string">&#x27;MA20&#x27;</span>, <span class="string">&#x27;Factor1&#x27;</span>, <span class="string">&#x27;Factor2&#x27;</span>, <span class="string">&#x27;Factor3&#x27;</span>]].tail())</span><br></pre></td></tr></table></figure>
+<h2 id="SymbolicClassifier">SymbolicClassifier</h2>
+<h3 id="概述-3">概述</h3>
+<ul>
+<li><strong>功能</strong>: 用于分类任务，生成符号表达式预测离散类别（如上涨/下跌）</li>
+<li><strong>适用场景</strong>: 在量化中预测股票价格方向（二分类）或多分类问题</li>
+<li><strong>输出</strong>: 一个分类表达式，返回概率或类别标签</li>
+</ul>
+<h3 id="核心参数-3">核心参数</h3>
+<ol>
+<li>population_size: 整数，默认 1000
+<ul>
+<li>种群中候选表达式的数量</li>
+</ul>
+</li>
+<li>generations: 整数，默认 20
+<ul>
+<li>进化迭代次数</li>
+</ul>
+</li>
+<li>function_set: 元组或列表，默认 (‘add’, ‘sub’, ‘mul’, ‘div’)
+<ul>
+<li>可用的数学函数集，可加入 ‘max’、‘min’ 等</li>
+</ul>
+</li>
+<li>metric: 字符串，默认 ‘log loss’
+<ul>
+<li>分类任务的适应度指标：
+<ul>
+<li>‘log loss’: 对数损失，优化概率预测</li>
+<li>‘accuracy’: 分类准确率</li>
+<li>可自定义（如 F1 分数）</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>tournament_size: 整数，默认 20
+<ul>
+<li>锦标赛选择的大小</li>
+</ul>
+</li>
+<li>stopping_criteria: 浮点数，默认 0.0
+<ul>
+<li>当适应度小于此值时停止</li>
+</ul>
+</li>
+<li>class_weight: 字典或 None，默认 None
+<ul>
+<li>类别权重，例如 {0: 1, 1: 2}，调整类别不平衡</li>
+</ul>
+</li>
+<li>threshold: 浮点数，默认 0.5
+<ul>
+<li>分类概率的阈值，用于将输出转为类别</li>
+</ul>
+</li>
+<li>p_crossover: 浮点数，默认 0.9
+<ul>
+<li>交叉概率</li>
+</ul>
+</li>
+<li>p_hoist_mutation: 浮点数，默认 0.01
+<ul>
+<li>提升变异概率，随机提取子树以简化表达式</li>
+</ul>
+</li>
+<li>max_samples: 浮点数，默认 1.0
+<ul>
+<li>用于计算适应度的样本比例，降低过拟合风险</li>
+</ul>
+</li>
+<li>verbose: 整数，默认 0
+<ul>
+<li>是否显示训练过程</li>
+</ul>
+</li>
+<li>random_state: 整数或 None，默认 None
+<ul>
+<li>随机种子</li>
+</ul>
+</li>
+</ol>
+<h3 id="补充说明-3">补充说明</h3>
+<ul>
+<li><strong>SymbolicClassifier</strong> 假设 y 是离散标签（如 0 和 1）</li>
+<li>输出概率通过 predict_proba 获取，类别通过 predict 获取</li>
+</ul>
+<h3 id="例子-3">例子</h3>
+<p><strong>目标</strong>: 预测价格涨跌方向</p>
+<p><strong>场景</strong>: 用股票的特征预测下一交易日价格是上涨（1）还是下跌（0）</p>
+<p>1、和transformer类似使用时候会报错，根据提示找到对应代码行要把fit那一行代码替换，替换内容和上面transform中第一个替换一样</p>
+<p>2、根据提示找到对于代码行</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">predict_proba</span>(<span class="params">self, X</span>):</span><br><span class="line">    X = check_array(X)</span><br><span class="line">    _, n_features = X.shape</span><br><span class="line">    <span class="keyword">if</span> <span class="variable language_">self</span>.n_features_in_ != n_features:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(...)</span><br><span class="line">    scores = <span class="variable language_">self</span>._program.execute(X)</span><br><span class="line">    ...</span><br><span class="line">    </span><br><span class="line"><span class="comment"># 修改程序</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">predict_proba</span>(<span class="params">self, X</span>):</span><br><span class="line">    X = check_array(X)</span><br><span class="line">    scores = <span class="variable language_">self</span>._program.execute(X)</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+<p>最后运行程序如下</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">from</span> gplearn.genetic <span class="keyword">import</span> SymbolicClassifier</span><br><span class="line"></span><br><span class="line"><span class="comment"># 数据准备</span></span><br><span class="line">data = df.copy()</span><br><span class="line">data[<span class="string">&#x27;Direction&#x27;</span>] = (data[<span class="string">&#x27;close&#x27;</span>].pct_change().shift(-<span class="number">1</span>) &gt; <span class="number">0</span>).astype(<span class="built_in">int</span>)  <span class="comment"># 涨跌标签</span></span><br><span class="line">data[<span class="string">&#x27;MA5&#x27;</span>] = data[<span class="string">&#x27;close&#x27;</span>].rolling(<span class="number">5</span>).mean()    <span class="comment"># 5日均线</span></span><br><span class="line">data[<span class="string">&#x27;MA20&#x27;</span>] = data[<span class="string">&#x27;close&#x27;</span>].rolling(<span class="number">20</span>).mean()  <span class="comment"># 20日均线</span></span><br><span class="line">data = data.dropna()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 输入特征和目标</span></span><br><span class="line">X = data[[<span class="string">&#x27;close&#x27;</span>, <span class="string">&#x27;MA5&#x27;</span>, <span class="string">&#x27;MA20&#x27;</span>]].values</span><br><span class="line">y = data[<span class="string">&#x27;Direction&#x27;</span>].values</span><br><span class="line"></span><br><span class="line"><span class="comment"># 初始化 SymbolicClassifier</span></span><br><span class="line">classifier = SymbolicClassifier(</span><br><span class="line">    population_size=<span class="number">1000</span>,          <span class="comment"># 种群大小</span></span><br><span class="line">    generations=<span class="number">10</span>,               <span class="comment"># 进化10代</span></span><br><span class="line">    tournament_size=<span class="number">20</span>,           <span class="comment"># 锦标赛选择</span></span><br><span class="line">    function_set=(<span class="string">&#x27;add&#x27;</span>, <span class="string">&#x27;sub&#x27;</span>, <span class="string">&#x27;mul&#x27;</span>, <span class="string">&#x27;div&#x27;</span>, <span class="string">&#x27;abs&#x27;</span>),  <span class="comment"># 函数集</span></span><br><span class="line">    metric=<span class="string">&#x27;log loss&#x27;</span>,            <span class="comment"># 优化对数损失</span></span><br><span class="line">    class_weight=&#123;<span class="number">0</span>: <span class="number">1</span>, <span class="number">1</span>: <span class="number">1</span>&#125;,    <span class="comment"># 类别权重平衡</span></span><br><span class="line">    verbose=<span class="number">1</span>                     <span class="comment"># 显示过程</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 训练模型</span></span><br><span class="line">classifier.fit(X, y)</span><br><span class="line"><span class="comment"># 输出结果</span></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;分类表达式:&quot;</span>, classifier._program)</span><br><span class="line"><span class="comment"># 打印结果</span></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;准确率:&quot;</span>, classifier.score(X, y))</span><br></pre></td></tr></table></figure>
+<h2 id="总结与对比">总结与对比</h2>
+<table>
+<thead>
+<tr>
+<th>类名</th>
+<th>目标</th>
+<th>输出</th>
+<th>示例场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SymbolicRegressor</td>
+<td>预测连续值</td>
+<td>单一表达式</td>
+<td>预测收益率</td>
+</tr>
+<tr>
+<td>SymbolicTransformer</td>
+<td>生成新特征</td>
+<td>多个表达式（特征矩阵）</td>
+<td>生成因子组合</td>
+</tr>
+<tr>
+<td>SymbolicClassifier</td>
+<td>预测分类标签</td>
+<td>单一表达式（概率/类别）</td>
+<td>预测涨跌方向</td>
+</tr>
+</tbody>
+</table>
+<h1>进阶</h1>
+<ul>
+<li>在 gplearn 中，自定义函数允许扩展默认的 function_set，加入特定的数学或金融操作。例如，默认的 function_set 包括 ‘add’, ‘sub’, ‘mul’, ‘div’ 等基本运算，但如果你想加入金融领域常用的指标（如 RSI、指数平滑等），可以通过 make_function 定义并添加到模型中</li>
+<li>在 gplearn 中，默认的 metric 是 ‘mse’（均方误差），但你可以通过 make_fitness 定义夏普比率作为适应度函数，替换默认指标</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">from</span> gplearn.genetic <span class="keyword">import</span> SymbolicRegressor</span><br><span class="line"><span class="keyword">from</span> gplearn.functions <span class="keyword">import</span> make_function</span><br><span class="line"><span class="keyword">from</span> gplearn.fitness <span class="keyword">import</span> make_fitness</span><br><span class="line"></span><br><span class="line"><span class="comment"># 自定义函数：RSI(相对强弱指数)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">rsi</span>(<span class="params">x</span>):</span><br><span class="line">    <span class="comment"># 输入 x 是单个特征的数组，长度为样本数</span></span><br><span class="line">    window = <span class="number">14</span>  <span class="comment"># RSI 窗口期</span></span><br><span class="line">    rsi_values = np.full_like(x, <span class="number">50.0</span>)  <span class="comment"># 初始化为中性值 50</span></span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>(x) &lt; window:</span><br><span class="line">        <span class="keyword">return</span> rsi_values  <span class="comment"># 如果数据不足，返回默认值</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 对每个位置计算 RSI（滑动窗口）</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(window - <span class="number">1</span>, <span class="built_in">len</span>(x)):</span><br><span class="line">        diff = np.diff(x[<span class="built_in">max</span>(<span class="number">0</span>, i - window + <span class="number">1</span>):i + <span class="number">1</span>])</span><br><span class="line">        up = np.where(diff &gt; <span class="number">0</span>, diff, <span class="number">0</span>)</span><br><span class="line">        down = np.where(diff &lt; <span class="number">0</span>, -diff, <span class="number">0</span>)</span><br><span class="line">        avg_up = np.mean(up)</span><br><span class="line">        avg_down = np.mean(down)</span><br><span class="line">        rs = avg_up / avg_down <span class="keyword">if</span> avg_down &gt; <span class="number">0</span> <span class="keyword">else</span> np.inf</span><br><span class="line">        rsi_values[i] = <span class="number">100</span> - (<span class="number">100</span> / (<span class="number">1</span> + rs)) <span class="keyword">if</span> rs != np.inf <span class="keyword">else</span> <span class="number">50</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> rsi_values  <span class="comment"># 返回与 x 同长的数组</span></span><br><span class="line"></span><br><span class="line">rsi_func = make_function(function=rsi, name=<span class="string">&#x27;rsi&#x27;</span>, arity=<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 自定义适应度函数：夏普比率</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">sharpe_ratio</span>(<span class="params">y, y_pred, sample_weight</span>):</span><br><span class="line">    returns = y_pred * y  <span class="comment"># 因子值 * 真实收益率</span></span><br><span class="line">    mean_return = np.mean(returns)</span><br><span class="line">    std_return = np.std(returns)</span><br><span class="line">    <span class="keyword">return</span> mean_return / std_return <span class="keyword">if</span> std_return &gt; <span class="number">0</span> <span class="keyword">else</span> -np.inf</span><br><span class="line"></span><br><span class="line">sharpe_fitness = make_fitness(function=sharpe_ratio, greater_is_better=<span class="literal">True</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 数据准备</span></span><br><span class="line">data = df.copy()</span><br><span class="line">data[<span class="string">&#x27;Returns&#x27;</span>] = data[<span class="string">&#x27;close&#x27;</span>].pct_change().shift(-<span class="number">1</span>)  <span class="comment"># 未来1日收益率</span></span><br><span class="line">data[<span class="string">&#x27;MA5&#x27;</span>] = data[<span class="string">&#x27;close&#x27;</span>].rolling(<span class="number">5</span>).mean()           <span class="comment"># 5日均线</span></span><br><span class="line">data[<span class="string">&#x27;MA20&#x27;</span>] = data[<span class="string">&#x27;close&#x27;</span>].rolling(<span class="number">20</span>).mean()         <span class="comment"># 20日均线</span></span><br><span class="line">data[<span class="string">&#x27;Vol&#x27;</span>] = data[<span class="string">&#x27;volume&#x27;</span>]                            <span class="comment"># 成交量</span></span><br><span class="line">data = data.dropna()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 输入特征和目标</span></span><br><span class="line">X = data[[<span class="string">&#x27;close&#x27;</span>, <span class="string">&#x27;MA5&#x27;</span>, <span class="string">&#x27;MA20&#x27;</span>, <span class="string">&#x27;Vol&#x27;</span>]].values</span><br><span class="line">y = data[<span class="string">&#x27;Returns&#x27;</span>].values</span><br><span class="line"></span><br><span class="line"><span class="comment"># 初始化 SymbolicRegressor</span></span><br><span class="line">regressor = SymbolicRegressor(</span><br><span class="line">    population_size=<span class="number">1000</span>,</span><br><span class="line">    generations=<span class="number">10</span>,</span><br><span class="line">    tournament_size=<span class="number">20</span>,</span><br><span class="line">    function_set=(<span class="string">&#x27;add&#x27;</span>, <span class="string">&#x27;sub&#x27;</span>, <span class="string">&#x27;mul&#x27;</span>, <span class="string">&#x27;div&#x27;</span>, <span class="string">&#x27;sqrt&#x27;</span>, <span class="string">&#x27;log&#x27;</span>, rsi_func),  <span class="comment"># 添加 RSI 函数</span></span><br><span class="line">    metric=sharpe_fitness,  <span class="comment"># 使用夏普比率</span></span><br><span class="line">    const_range=(-<span class="number">1</span>, <span class="number">1</span>),</span><br><span class="line">    init_depth=(<span class="number">2</span>, <span class="number">4</span>),</span><br><span class="line">    verbose=<span class="number">1</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 训练模型</span></span><br><span class="line">regressor.fit(X, y)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 输出结果</span></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;生成的因子表达式:&quot;</span>, regressor._program)</span><br></pre></td></tr></table></figure>
+<h1>分析</h1>
+<p>训练中打印的信息如下</p>
+<figure class="highlight tex"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">    |   Population Average    |             Best Individual              |</span><br><span class="line">---- ------------------------- ------------------------------------------ ----------</span><br><span class="line"> Gen   Length          Fitness   Length          Fitness      OOB Fitness  Time Left</span><br><span class="line">   0    10.5       1.234e+40        5      0.000045              N/A     15.2s</span><br><span class="line">   ...</span><br><span class="line">   9     8.2       0.00012         6      0.000032              N/A      0.0s</span><br></pre></td></tr></table></figure>
+<p><strong>Gen</strong>: 进化代数，第 0 代是初始种群，第 9 代是最后一代</p>
+<p><strong>Population Average</strong>:</p>
+<ul>
+<li>Length: 种群中表达式的平均长度（节点数）
+<ul>
+<li>第 0 代：10.5</li>
+<li>第 9 代：8.2（变短，可能受 parsimony_coefficient 影响）</li>
+</ul>
+</li>
+<li>Fitness: 种群的平均适应度。
+<ul>
+<li>第 0 代：1.234e+40（极大值，表明初始种群有很多无效表达式）</li>
+<li>第 9 代：0.00012（显著降低，适应度改善）</li>
+</ul>
+</li>
+</ul>
+<p><strong>Best Individual</strong>:</p>
+<ul>
+<li>Length: 最佳表达式的长度
+<ul>
+<li>第 0 代：5</li>
+<li>第 9 代：6（稍复杂）</li>
+</ul>
+</li>
+<li>Fitness: 最佳表达式的适应度。
+<ul>
+<li>第 0 代：0.000045</li>
+<li>第 9 代：0.000032（更低，模型优化成功）</li>
+</ul>
+</li>
+</ul>
+<p><strong>OOB Fitness</strong>: 袋外适应度，未启用（N/A）</p>
+<p><strong>Time Left</strong>: 剩余时间，从 15.2 秒到 0.0 秒，表示训练完成</p>
+<p>Length：的表达式长度指的就是公式复杂度，如下面这样的公式长度就是5，长度越长就表示公式越复杂也越容易过拟合，可通过parsimony_coefficient进行控制</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">   log</span><br><span class="line">   |</span><br><span class="line">  add</span><br><span class="line"> /   \</span><br><span class="line">X2  sqrt</span><br><span class="line">     |</span><br><span class="line">    X1</span><br></pre></td></tr></table></figure>
+<p>Fitness：是衡量因子表达式性能的指标，具体取决于设置的 metric 参数</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="https://yukizzc.github.io">ZZC</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="https://yukizzc.github.io/2025/03/13/finance/gplearn/">https://yukizzc.github.io/2025/03/13/finance/gplearn/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%9B%A0%E5%AD%90/">因子</a></div><div class="post-share"><div class="social-share" data-image="/images/%E6%9D%A8%E5%A8%81%E5%88%A9.jpg" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2025/12/31/essay/2025/" title="2025"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">Previous</div><div class="info-item-2">2025</div></div><div class="info-2"><div class="info-item-1">与君共勉 生活从不以你所想象的那般枯萎的成长。寒风下裸露的躯壳可能是燃尽后的余温，也可以是破茧成蝶前低声的呐喊。 它们从乱石瓦砾中伸出的双手，强壮而有力，仿佛扼住一切希望之火向上攀爬。世人皆赞花的美丽，又有谁懂那荆棘之路上的唯我风光独好。 所以我的朋友啊，愿你能扛过这冷冬，坚强的活下去。愿你有一天，面朝大海，春暖花开。      日期: 2025-01-06 归途 半夜初醒，一团白雾从身体里缓缓升起仿佛剥离开这丑陋的躯壳。 它望着他，没有留恋，飘啊飘啊，不知该去往何处。 列车在此时好像感应到了它，在此驻足，它问他你还不走吗，它却说我还能回去吗？沉默和寂静充斥在周围。盖上被子外面冷，不知谁最后说了一声，车轮又开始转动，一圈又一圈的前行越来越远又毫无意义。 那团气体已经离开好久了，久的连它自己分不清自己是什么。它想起丧钟为谁而鸣这一段话，是啊他们为何哭泣呢，因为我早已不再有眼泪，我没有心但是好想安慰他们。这么想着，它温柔坚定的向前方走去。      日期: 2025-01-13 </div></div></div></a><a class="pagination-related" href="/2024/12/31/essay/2017-2024/" title="2017-2024"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">Next</div><div class="info-item-2">2017-2024</div></div><div class="info-2"><div class="info-item-1">桔梗 轻吻着你的翅膀，喝醉了我的衣裳 拭去了夜的泪光，摇曳着谁的彷徨 迷上了花的芳香，种植上你的信仰 埋葬了我的过往，憧憬着海的远方      日期: 2017-01-20 城市的新年 肥胖的城市，瘦了下来 车站的行李箱，却多了出来 后面拖着岁月和青草 似乎又长高了些      日期: 2017-01-25 穿越时代的思念-奈落“我想要的，只是桔梗的心而已” 我梦里，你的眸，在那遥远海边 轻轻的，微笑着，若现 那个他，是过客，却又不曾离去 围墙外，小河畔，留影 马琴声，奏起 ，还有谁，会驻留 微风里，飘着你的余香 预言上，我们 ，将来会在一起 这世界，太美丽，你说 我放弃，所有，追一朵，向日葵 你走了，转过身，玉碎 轮回世，遇见，那熟悉，桔梗花 靠近你，吻着你，不识 我想你，那么多的日夜，你可知 失去过，有沉痛的回忆 你的名，已深刻，在我的灵魂里 我愿意，在此处等候      日期: 2017-03-28 向南飞 戚戚长夜难入眠，遥想伊人在南方 我欲乘风不归期，化作葵花守君旁      日期: 2023-12-29 完结 把酒言欢三千丝，人生几何莫留恋 天不待我如蝼蚁，吾心凄凄阑...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/03/28/finance/%E6%9C%9F%E6%9D%83/" title="期权"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-03-28</div><div class="info-item-2">期权</div></div><div class="info-2"><div class="info-item-1">损益图 期权的四个基本头寸的损益结构：    头寸 损益特征 适用场景     买入看涨 亏损有限（权利金），收益无限 看大涨   卖出看涨 收益有限（权利金），亏损无限 不看涨   买入看跌 亏损有限（权利金），收益有限 看大跌   卖出看跌 收益有限（权利金），亏损有限 不看跌     期权平价公式 C+Ke−rT=P+S{\color{Red} C + Ke^{-rT} = P + S} C+Ke−rT=P+S   C：欧式看涨期权价格   P：欧式看跌期权价格   S：标的资产当前价格   K：行权价   r：无风险利率   T：剩余到期时间   e−rTe^{−rT}e−rT：连续复利折现因子   直观理解：  左边：买入看涨期权 + 准备 Ke−rTKe^{-rT}Ke−rT 现金（未来自动增值到 KKK） 右边：买入看跌期权 + 买入1股股票  到期时股价为 STS_TST​： 情况1：ST&gt;KS_T &gt; KST​&gt;K（股价高于行权价）  左边：看涨期权行权，以 KKK 买入股票，手中现金正好 KKK 元 → 最终持有 1股股票 右边：看跌期权不行...</div></div></div></a><a class="pagination-related" href="/2026/03/26/finance/%E5%9B%A0%E5%AD%90%E5%88%86%E6%9E%90/" title="因子分析"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-03-26</div><div class="info-item-2">因子分析</div></div><div class="info-2"><div class="info-item-1">概述 因子分析是量化投资的核心方法论，旨在识别和验证能够预测资产未来收益的特征（因子）。本文档提供一套完整的因子分析流程，涵盖数据预处理、单因子测试、多因子合成与模型构建。 整个分析流程遵循以下逻辑： 数据获取 → 数据预处理 → 单因子测试 → 多因子合成 → 组合构建与评估 数据预处理 原始因子数据通常包含噪声、量纲差异以及不应有的偏好，必须进行预处理。核心原则：先去极值，后标准化，最后中性化。 去极值 目的：消除极端值对后续统计分析的干扰。 常见方法：  MAD法（中位数去极值）：基于中位数和绝对中位差，对异常值鲁棒。 3σ法（标准差法）：基于均值和标准差，假设数据服从正态分布。 百分位法：将超出指定百分位范围的值截断。  1234567891011121314151617181920212223242526272829303132333435363738394041424344454647import pandas as pdimport numpy as npimport matplotlib.pyplot as plt# 设置中文字体plt.rcParams[&#x2...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/images/%E6%9D%A8%E5%A8%81%E5%88%A9.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ZZC</div><div class="author-info-description">计算机和金融方面的学习笔记，也会写一些个人随笔和诗歌</div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">59</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">28</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">5</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://gitee.com/yukizzc"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">基本概念</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">2.</span> <span class="toc-text">基本设置</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#SymbolicRegressor"><span class="toc-number">2.1.</span> <span class="toc-text">SymbolicRegressor</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0"><span class="toc-number">2.1.1.</span> <span class="toc-text">概述</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E5%8F%82%E6%95%B0"><span class="toc-number">2.1.2.</span> <span class="toc-text">核心参数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A1%A5%E5%85%85%E8%AF%B4%E6%98%8E"><span class="toc-number">2.1.3.</span> <span class="toc-text">补充说明</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BE%8B%E5%AD%90"><span class="toc-number">2.1.4.</span> <span class="toc-text">例子</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SymbolicTransformer"><span class="toc-number">2.2.</span> <span class="toc-text">SymbolicTransformer</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0-2"><span class="toc-number">2.2.1.</span> <span class="toc-text">概述</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E5%8F%82%E6%95%B0-2"><span class="toc-number">2.2.2.</span> <span class="toc-text">核心参数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A1%A5%E5%85%85%E8%AF%B4%E6%98%8E-2"><span class="toc-number">2.2.3.</span> <span class="toc-text">补充说明</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BE%8B%E5%AD%90-2"><span class="toc-number">2.2.4.</span> <span class="toc-text">例子</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SymbolicClassifier"><span class="toc-number">2.3.</span> <span class="toc-text">SymbolicClassifier</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0-3"><span class="toc-number">2.3.1.</span> <span class="toc-text">概述</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E5%8F%82%E6%95%B0-3"><span class="toc-number">2.3.2.</span> <span class="toc-text">核心参数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A1%A5%E5%85%85%E8%AF%B4%E6%98%8E-3"><span class="toc-number">2.3.3.</span> <span class="toc-text">补充说明</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BE%8B%E5%AD%90-3"><span class="toc-number">2.3.4.</span> <span class="toc-text">例子</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93%E4%B8%8E%E5%AF%B9%E6%AF%94"><span class="toc-number">2.4.</span> <span class="toc-text">总结与对比</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">3.</span> <span class="toc-text">进阶</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">4.</span> <span class="toc-text">分析</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/12/31/essay/2026/" title="2026">2026</a><time datetime="2026-12-30T16:00:00.000Z" title="Created 2026-12-31 00:00:00">2026-12-31</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/04/22/computer/rocket/" title="rocket">rocket</a><time datetime="2026-04-21T16:00:00.000Z" title="Created 2026-04-22 00:00:00">2026-04-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/04/22/computer/rust%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/" title="rust网络编程">rust网络编程</a><time datetime="2026-04-21T16:00:00.000Z" title="Created 2026-04-22 00:00:00">2026-04-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/04/02/computer/rust_python%E4%BA%92%E6%93%8D%E4%BD%9C/" title="rust_python互操作">rust_python互操作</a><time datetime="2026-04-01T16:00:00.000Z" title="Created 2026-04-02 00:00:00">2026-04-02</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/04/02/computer/rust%E5%A4%9A%E7%BA%BF%E7%A8%8B/" title="rust多线程">rust多线程</a><time datetime="2026-04-01T16:00:00.000Z" title="Created 2026-04-02 00:00:00">2026-04-02</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By ZZC</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(async () => {
+  const showKatex = () => {
+    document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
+  }
+
+  if (!window.katex_js_css) {
+    window.katex_js_css = true
+    await btf.getCSS('https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/katex.min.css')
+    if (false) {
+      await btf.getScript('https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/contrib/copy-tex.min.js')
+    }
+  }
+
+  showKatex()
+})()</script><script>(() => {
+  const parseViewBox = viewBox => {
+    if (!viewBox) return null
+    const parts = viewBox.trim().split(/[\s,]+/).map(n => Number(n))
+    if (parts.length !== 4 || parts.some(n => Number.isNaN(n))) return null
+    return parts
+  }
+
+  const getSvgViewBox = svg => {
+    const attr = parseViewBox(svg.getAttribute('viewBox'))
+    if (attr) return attr
+
+    // Fallback: use bbox to build a viewBox
+    try {
+      const bbox = svg.getBBox()
+      if (bbox && bbox.width && bbox.height) return [bbox.x, bbox.y, bbox.width, bbox.height]
+    } catch (e) {
+      // getBBox may fail on some edge cases; ignore
+    }
+
+    const w = Number(svg.getAttribute('width')) || 0
+    const h = Number(svg.getAttribute('height')) || 0
+    if (w > 0 && h > 0) return [0, 0, w, h]
+    return [0, 0, 100, 100]
+  }
+
+  const setSvgViewBox = (svg, vb) => {
+    svg.setAttribute('viewBox', `${vb[0]} ${vb[1]} ${vb[2]} ${vb[3]}`)
+  }
+
+  const clamp = (v, min, max) => Math.max(min, Math.min(max, v))
+
+  const openSvgInNewTab = ({ source, initViewBox }) => {
+    const getClonedSvg = () => {
+      if (typeof source === 'string') {
+        const template = document.createElement('template')
+        template.innerHTML = source.trim()
+        const svg = template.content.querySelector('svg')
+        return svg ? svg.cloneNode(true) : null
+      }
+      if (source && typeof source.cloneNode === 'function') {
+        return source.cloneNode(true)
+      }
+      return null
+    }
+
+    const clone = getClonedSvg()
+    if (!clone) return
+    if (initViewBox && initViewBox.length === 4) {
+      clone.setAttribute('viewBox', initViewBox.join(' '))
+    }
+    if (!clone.getAttribute('xmlns')) clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+    if (!clone.getAttribute('xmlns:xlink') && clone.outerHTML.includes('xlink:')) {
+      clone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink')
+    }
+    // inject background to match current theme
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
+    const bg = getComputedStyle(document.body).backgroundColor || (isDark ? '#1e1e1e' : '#ffffff')
+    if (!clone.style.background) clone.style.background = bg
+
+    const serializer = new XMLSerializer()
+    const svgSource = serializer.serializeToString(clone)
+    const htmlSource = `<!doctype html><html><head><meta charset="utf-8" />
+      <style>
+        html, body { width: 100%; height: 100%; margin: 0; display: flex; align-items: center; justify-content: center; background: ${bg}; }
+        svg { max-width: 100%; max-height: 100%; height: auto; width: auto; }
+      </style>
+      </head><body>${svgSource}</body></html>`
+    const blob = new Blob([htmlSource], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank', 'noopener')
+    setTimeout(() => URL.revokeObjectURL(url), 30000)
+  }
+
+  const attachMermaidViewerButton = wrap => {
+    let btn = wrap.querySelector('.mermaid-open-btn')
+    if (!btn) {
+      btn = document.createElement('button')
+      btn.type = 'button'
+      btn.className = 'mermaid-open-btn'
+      wrap.appendChild(btn)
+    }
+
+    btn.innerHTML = '<i class="fa fa-search fa-fw" aria-hidden="true"></i>'
+
+    if (!btn.__mermaidViewerBound) {
+      btn.addEventListener('click', e => {
+        e.preventDefault()
+        e.stopPropagation()
+        const svg = wrap.__mermaidOriginalSvg || wrap.querySelector('svg')
+        if (!svg) return
+        const initViewBox = wrap.__mermaidInitViewBox
+        if (typeof svg === 'string') {
+          openSvgInNewTab({ source: svg, initViewBox })
+          return
+        }
+        openSvgInNewTab({ source: svg, initViewBox })
+      })
+      btn.__mermaidViewerBound = true
+    }
+  }
+
+  // Zoom around a point (px, py) in the SVG viewport (in viewBox coordinates)
+  const zoomAtPoint = (vb, factor, px, py) => {
+    const w = vb[2] * factor
+    const h = vb[3] * factor
+    const nx = px - (px - vb[0]) * factor
+    const ny = py - (py - vb[1]) * factor
+    return [nx, ny, w, h]
+  }
+
+  const initMermaidGestures = wrap => {
+    const svg = wrap.querySelector('svg')
+    if (!svg) return
+
+    // Ensure viewBox exists so gestures always work
+    const initVb = getSvgViewBox(svg)
+    wrap.__mermaidInitViewBox = initVb
+    wrap.__mermaidCurViewBox = initVb.slice()
+    setSvgViewBox(svg, initVb)
+
+    // Avoid binding multiple times on themeChange/pjax
+    if (wrap.__mermaidGestureBound) return
+    wrap.__mermaidGestureBound = true
+
+    // Helper: map client (viewport) coordinate -> viewBox coordinate
+    const clientToViewBox = (clientX, clientY) => {
+      const rect = svg.getBoundingClientRect()
+      const vb = wrap.__mermaidCurViewBox || getSvgViewBox(svg)
+      const x = vb[0] + (clientX - rect.left) * (vb[2] / rect.width)
+      const y = vb[1] + (clientY - rect.top) * (vb[3] / rect.height)
+      return { x, y, rect, vb }
+    }
+
+    const state = {
+      pointers: new Map(),
+      startVb: null,
+      startDist: 0,
+      startCenter: null
+    }
+
+    const clampVb = vb => {
+      const init = wrap.__mermaidInitViewBox || vb
+      const minW = init[2] * 0.1
+      const maxW = init[2] * 10
+      const minH = init[3] * 0.1
+      const maxH = init[3] * 10
+      vb[2] = clamp(vb[2], minW, maxW)
+      vb[3] = clamp(vb[3], minH, maxH)
+      return vb
+    }
+
+    const setCurVb = vb => {
+      vb = clampVb(vb)
+      wrap.__mermaidCurViewBox = vb
+      setSvgViewBox(svg, vb)
+    }
+
+    const onPointerDown = e => {
+      // Allow only primary button for mouse
+      if (e.pointerType === 'mouse' && e.button !== 0) return
+      svg.setPointerCapture(e.pointerId)
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+      if (state.pointers.size === 1) {
+        state.startVb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+      } else if (state.pointers.size === 2) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        state.startDist = Math.hypot(dx, dy)
+        state.startVb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+        state.startCenter = { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 }
+      }
+    }
+
+    const onPointerMove = e => {
+      if (!state.pointers.has(e.pointerId)) return
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+      // Pan with 1 pointer
+      if (state.pointers.size === 1 && state.startVb) {
+        const p = [...state.pointers.values()][0]
+        const prev = { x: e.clientX - e.movementX, y: e.clientY - e.movementY }
+        // movementX/Y unreliable on touch, compute from stored last position
+        const last = wrap.__mermaidLastSinglePointer || p
+        const dxClient = p.x - last.x
+        const dyClient = p.y - last.y
+        wrap.__mermaidLastSinglePointer = p
+
+        const { rect } = clientToViewBox(p.x, p.y)
+        const vb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+        const dx = dxClient * (vb[2] / rect.width)
+        const dy = dyClient * (vb[3] / rect.height)
+        setCurVb([vb[0] - dx, vb[1] - dy, vb[2], vb[3]])
+        return
+      }
+
+      // Pinch zoom with 2 pointers
+      if (state.pointers.size === 2 && state.startVb && state.startDist > 0) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        const dist = Math.hypot(dx, dy)
+        if (!dist) return
+        const factor = state.startDist / dist // dist bigger => zoom in (viewBox smaller)
+
+        const cx = (pts[0].x + pts[1].x) / 2
+        const cy = (pts[0].y + pts[1].y) / 2
+        const centerClient = { x: cx, y: cy }
+
+        const pxy = clientToViewBox(centerClient.x, centerClient.y)
+        const cpx = pxy.x
+        const cpy = pxy.y
+
+        const vb = zoomAtPoint(state.startVb, factor, cpx, cpy)
+        setCurVb(vb)
+      }
+    }
+
+    const onPointerUpOrCancel = e => {
+      state.pointers.delete(e.pointerId)
+      if (state.pointers.size === 0) {
+        state.startVb = null
+        state.startDist = 0
+        state.startCenter = null
+        wrap.__mermaidLastSinglePointer = null
+      } else if (state.pointers.size === 1) {
+        // reset single pointer baseline to avoid jump
+        wrap.__mermaidLastSinglePointer = [...state.pointers.values()][0]
+      }
+    }
+
+    // Wheel zoom (mouse/trackpad)
+    const onWheel = e => {
+      // ctrlKey on mac trackpad pinch; we treat both as zoom
+      e.preventDefault()
+      const delta = e.deltaY
+      const zoomFactor = delta > 0 ? 1.1 : 0.9
+      const { x, y } = clientToViewBox(e.clientX, e.clientY)
+      const vb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+      setCurVb(zoomAtPoint(vb, zoomFactor, x, y))
+    }
+
+    const onDblClick = () => {
+      const init = wrap.__mermaidInitViewBox
+      if (!init) return
+      wrap.__mermaidCurViewBox = init.slice()
+      setSvgViewBox(svg, init)
+    }
+
+    svg.addEventListener('pointerdown', onPointerDown)
+    svg.addEventListener('pointermove', onPointerMove)
+    svg.addEventListener('pointerup', onPointerUpOrCancel)
+    svg.addEventListener('pointercancel', onPointerUpOrCancel)
+    svg.addEventListener('wheel', onWheel, { passive: false })
+    svg.addEventListener('dblclick', onDblClick)
+  }
+
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+
+      // Clear old render (themeChange/pjax will rerun)
+      const oldSvg = item.querySelector('svg')
+      if (oldSvg) oldSvg.remove()
+      item.__mermaidGestureBound = false
+
+      const config = mermaidSrc.dataset.config ? JSON.parse(mermaidSrc.dataset.config) : {}
+      if (!config.theme) {
+        config.theme = theme
+      }
+      const mermaidThemeConfig = `%%{init: ${JSON.stringify(config)}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+        if (true) initMermaidGestures(item)
+        item.__mermaidOriginalSvg = svg
+        if (true) attachMermaidViewerButton(item)
+      }
+
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.12.2/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">Search</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  Loading Database</span></div><div class="local-search-input"><input placeholder="searching..." type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.5.4"></script></div></div></body></html>

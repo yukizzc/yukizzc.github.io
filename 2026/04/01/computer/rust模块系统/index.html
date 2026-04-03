@@ -1,0 +1,741 @@
+<!DOCTYPE html><html lang="zh-C" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>rust模块系统 | Z</title><meta name="author" content="ZZC"><meta name="copyright" content="ZZC"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="模块系统是 Rust 组织代码的核心机制，包括 Package（包）、Crate（箱）、Module（模块）、Path（路径）、可见性控制等。良好的模块化设计能让代码更清晰、更易维护。 一个完整项目结构如下 123456789101112131415161718my-project&#x2F;                   # Package 根目录├── Cargo.toml">
+<meta property="og:type" content="article">
+<meta property="og:title" content="rust模块系统">
+<meta property="og:url" content="https://yukizzc.github.io/2026/04/01/computer/rust%E6%A8%A1%E5%9D%97%E7%B3%BB%E7%BB%9F/index.html">
+<meta property="og:site_name" content="Z">
+<meta property="og:description" content="模块系统是 Rust 组织代码的核心机制，包括 Package（包）、Crate（箱）、Module（模块）、Path（路径）、可见性控制等。良好的模块化设计能让代码更清晰、更易维护。 一个完整项目结构如下 123456789101112131415161718my-project&#x2F;                   # Package 根目录├── Cargo.toml">
+<meta property="og:locale">
+<meta property="og:image" content="https://yukizzc.github.io/images/%E6%9D%A8%E5%A8%81%E5%88%A9.jpg">
+<meta property="article:published_time" content="2026-03-31T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-04-01T07:52:23.666Z">
+<meta property="article:author" content="ZZC">
+<meta property="article:tag" content="rust">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://yukizzc.github.io/images/%E6%9D%A8%E5%A8%81%E5%88%A9.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "rust模块系统",
+  "url": "https://yukizzc.github.io/2026/04/01/computer/rust%E6%A8%A1%E5%9D%97%E7%B3%BB%E7%BB%9F/",
+  "image": "https://yukizzc.github.io/images/%E6%9D%A8%E5%A8%81%E5%88%A9.jpg",
+  "datePublished": "2026-03-31T16:00:00.000Z",
+  "dateModified": "2026-04-01T07:52:23.666Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "ZZC",
+      "url": "https://yukizzc.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://yukizzc.github.io/2026/04/01/computer/rust%E6%A8%A1%E5%9D%97%E7%B3%BB%E7%BB%9F/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"No results found for: ${query}","hits_stats":"${hits} articles found"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":true,"highlightMacStyle":true},
+  copy: {
+    success: 'Copy Successful',
+    error: 'Copy Failed',
+    noSupport: 'Browser Not Supported'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just now',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: 'Load More'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'rust模块系统',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 7.3.0"></head><body><div class="bg-animation" id="web_bg" style="background-color: #E8F4F8;"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/images/%E6%9D%A8%E5%A8%81%E5%88%A9.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">59</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">28</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">5</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><span class="site-page group"><span> 分类</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/categories/finance/"><i class="fa-fw fas fa-chart-line"></i><span> 金融</span></a></li><li><a class="site-page child" href="/categories/computer/"><i class="fa-fw fas fa-code"></i><span> 计算机</span></a></li><li><a class="site-page child" href="/categories/essay/"><i class="fa-fw fas fa-heart"></i><span> 随文</span></a></li><li><a class="site-page child" href="/categories/mathematical/"><i class="fa-fw fas fa-atom"></i><span> 数理</span></a></li><li><a class="site-page child" href="/categories/misc/"><i class="fa-fw fas fa-comment-dots"></i><span> 其他</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-calendar-alt"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg fixed" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Z</span></a><a class="nav-page-title" href="/"><span class="site-name">rust模块系统</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  Back to Home</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> Search</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><span class="site-page group"><span> 分类</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/categories/finance/"><i class="fa-fw fas fa-chart-line"></i><span> 金融</span></a></li><li><a class="site-page child" href="/categories/computer/"><i class="fa-fw fas fa-code"></i><span> 计算机</span></a></li><li><a class="site-page child" href="/categories/essay/"><i class="fa-fw fas fa-heart"></i><span> 随文</span></a></li><li><a class="site-page child" href="/categories/mathematical/"><i class="fa-fw fas fa-atom"></i><span> 数理</span></a></li><li><a class="site-page child" href="/categories/misc/"><i class="fa-fw fas fa-comment-dots"></i><span> 其他</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-calendar-alt"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">rust模块系统</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2026-03-31T16:00:00.000Z" title="Created 2026-04-01 00:00:00">2026-04-01</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2026-04-01T07:52:23.666Z" title="Updated 2026-04-01 15:52:23">2026-04-01</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/computer/">computer</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post Views:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>模块系统是 Rust 组织代码的核心机制，包括 Package（包）、Crate（箱）、Module（模块）、Path（路径）、可见性控制等。良好的模块化设计能让代码更清晰、更易维护。</p>
+<p>一个完整项目结构如下</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">my-project/</span>                   <span class="comment"># Package 根目录</span></span><br><span class="line"><span class="string">├──</span> <span class="string">Cargo.toml</span>               <span class="comment"># 项目配置与依赖</span></span><br><span class="line"><span class="string">├──</span> <span class="string">Cargo.lock</span>               <span class="comment"># 依赖版本锁定</span></span><br><span class="line"><span class="string">├──</span> <span class="string">src/</span></span><br><span class="line"><span class="string">│</span>   <span class="string">├──</span> <span class="string">main.rs</span>              <span class="comment"># 默认二进制入口（与 Package 同名）</span></span><br><span class="line"><span class="string">│</span>   <span class="string">├──</span> <span class="string">lib.rs</span>               <span class="comment"># 库入口</span></span><br><span class="line"><span class="string">│</span>   <span class="string">└──</span> <span class="string">bin/</span>                 <span class="comment"># 额外二进制目录</span></span><br><span class="line"><span class="string">│</span>       <span class="string">├──</span> <span class="string">server.rs</span>        <span class="comment"># 生成可执行文件 server</span></span><br><span class="line"><span class="string">│</span>       <span class="string">└──</span> <span class="string">cli.rs</span>           <span class="comment"># 生成可执行文件 cli</span></span><br><span class="line"><span class="string">├──</span> <span class="string">tests/</span>                   <span class="comment"># 集成测试</span></span><br><span class="line"><span class="string">│</span>   <span class="string">├──</span> <span class="string">integration_test.rs</span>  <span class="comment"># 集成测试文件 1</span></span><br><span class="line"><span class="string">│</span>   <span class="string">└──</span> <span class="string">api_test.rs</span>          <span class="comment"># 集成测试文件 2</span></span><br><span class="line"><span class="string">├──</span> <span class="string">benches/</span>                 <span class="comment"># 基准测试</span></span><br><span class="line"><span class="string">│</span>   <span class="string">├──</span> <span class="string">bench.rs</span>             <span class="comment"># 基准测试文件 1</span></span><br><span class="line"><span class="string">│</span>   <span class="string">└──</span> <span class="string">memory_bench.rs</span>      <span class="comment"># 基准测试文件 2</span></span><br><span class="line"><span class="string">└──</span> <span class="string">examples/</span>                <span class="comment"># 示例代码</span></span><br><span class="line">    <span class="string">├──</span> <span class="string">basic_usage.rs</span>       <span class="comment"># 基础示例</span></span><br><span class="line">    <span class="string">└──</span> <span class="string">advanced_usage.rs</span>    <span class="comment"># 高级示例</span></span><br></pre></td></tr></table></figure>
+<h1>Package 与 Crate</h1>
+<h2 id="基本概念">基本概念</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">概念</th>
+<th style="text-align:left">说明</th>
+<th style="text-align:left">类比</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>Crate</strong></td>
+<td style="text-align:left">编译单元，编译后生成一个二进制文件或库文件</td>
+<td style="text-align:left">一个&quot;项目&quot;</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Package</strong></td>
+<td style="text-align:left">包含一个或多个 Crate，由 Cargo.toml 定义</td>
+<td style="text-align:left">一个&quot;仓库&quot;</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Crate Root</strong></td>
+<td style="text-align:left">编译器开始编译的入口文件</td>
+<td style="text-align:left"><code>src/main.rs</code> 或 <code>src/lib.rs</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>关系</strong>：</p>
+<ul>
+<li>一个 Package 包含<strong>至少一个</strong> Crate（通常是 1 个库 + 多个二进制）</li>
+<li>Package 可以有<strong>最多一个</strong>库 crate，可以有<strong>任意多个</strong>二进制 crate</li>
+</ul>
+<h2 id="Package-结构">Package 结构</h2>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">my_package/                    # Package 根目录</span><br><span class="line">├── Cargo<span class="selector-class">.toml</span>                 # Package 配置文件</span><br><span class="line">├── <span class="attribute">src</span>/</span><br><span class="line">│   ├── <span class="selector-tag">main</span><span class="selector-class">.rs</span>                # 二进制 crate 根（默认）</span><br><span class="line">│   ├── lib<span class="selector-class">.rs</span>                 # 库 crate 根（可选）</span><br><span class="line">│   └── bin/                   # 多个二进制 crate</span><br><span class="line">│       ├── tool1<span class="selector-class">.rs</span>           # 工具<span class="number">1</span> 的 crate 根</span><br><span class="line">│       └── tool2<span class="selector-class">.rs</span>           # 工具<span class="number">2</span> 的 crate 根</span><br><span class="line">└── tests/                     # 集成测试目录</span><br></pre></td></tr></table></figure>
+<h2 id="Crate-类型">Crate 类型</h2>
+<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Cargo.toml</span></span><br><span class="line"><span class="section">[package]</span></span><br><span class="line"><span class="attr">name</span> = <span class="string">&quot;my_package&quot;</span></span><br><span class="line"><span class="attr">version</span> = <span class="string">&quot;0.1.0&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 默认是二进制 crate(有 main.rs)</span></span><br><span class="line"><span class="comment"># 如果只有 lib.rs,就是库 crate</span></span><br><span class="line"><span class="comment"># 同时有两者,则包含两个 crate</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// src/main.rs - 二进制 crate 入口</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;Hello from binary!&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// src/lib.rs - 库 crate 入口</span></span><br><span class="line"><span class="keyword">pub</span> <span class="keyword">fn</span> <span class="title function_">add</span>(a: <span class="type">i32</span>, b: <span class="type">i32</span>) <span class="punctuation">-&gt;</span> <span class="type">i32</span> &#123;</span><br><span class="line">    a + b</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>二进制 crate 与库 crate 的区别</strong>：</p>
+<ul>
+<li>二进制 crate：有 <code>main()</code> 函数，可独立运行</li>
+<li>库 crate：无 <code>main()</code>，提供功能供其他项目使用</li>
+</ul>
+<h1>Module 与 Path</h1>
+<p>Rust 中，模块是组织代码的单元，路径则用于定位模块或其中的项。根据模块定义方式的不同，可以分为三种形式：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">形式</th>
+<th style="text-align:left">适用场景</th>
+<th style="text-align:left">文件结构</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>内联模块</strong></td>
+<td style="text-align:left">小型、临时代码块</td>
+<td style="text-align:left">直接写在 <code>.rs</code> 文件中</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>文件模块</strong></td>
+<td style="text-align:left">单一功能模块</td>
+<td style="text-align:left"><code>src/module.rs</code></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>目录模块</strong></td>
+<td style="text-align:left">复杂功能（含子模块）</td>
+<td style="text-align:left"><code>src/module.rs</code> + <code>src/module/*.rs</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="内联模块（Inline-Module）">内联模块（Inline Module）</h2>
+<p>在同一文件中使用 <code>mod</code> 关键字直接定义模块，模块内容写在花括号内。</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">mod</span> utils &#123;</span><br><span class="line">    <span class="keyword">pub</span> <span class="keyword">fn</span> <span class="title function_">helper</span>() &#123;</span><br><span class="line">        <span class="built_in">println!</span>(<span class="string">&quot;inline module&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    utils::<span class="title function_ invoke__">helper</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="文件模块（File-Module）">文件模块（File Module）</h2>
+<p>将模块内容放在单独的文件中，文件名即为模块名。</p>
+<p><strong>目录结构：</strong></p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">src</span>/</span><br><span class="line">├── <span class="selector-tag">main</span><span class="selector-class">.rs</span></span><br><span class="line">└── utils<span class="selector-class">.rs</span></span><br></pre></td></tr></table></figure>
+<p><strong>src/utils.rs</strong></p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pub</span> <span class="keyword">fn</span> <span class="title function_">helper</span>() &#123;</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;file module&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>src/main.rs</strong></p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">mod</span> utils;  <span class="comment">// 声明模块,Rust 会自动加载 utils.rs</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    utils::<span class="title function_ invoke__">helper</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="目录模块（Directory-Module）">目录模块（Directory Module）</h2>
+<p>当一个模块较复杂时，可以拆分为一个目录，使用 <strong>同名文件 + 同名文件夹</strong> 的方式组织</p>
+<p><strong>目录结构：</strong></p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">src</span>/</span><br><span class="line">├── <span class="selector-tag">main</span><span class="selector-class">.rs</span></span><br><span class="line">├── utils<span class="selector-class">.rs</span>          // 模块入口,声明子模块</span><br><span class="line">└── utils/            // 同名文件夹,存放子模块文件</span><br><span class="line">    └── helper<span class="selector-class">.rs</span></span><br></pre></td></tr></table></figure>
+<p><strong>src/utils.rs</strong></p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pub</span> <span class="keyword">mod</span> helper;  <span class="comment">// 声明并暴露子模块</span></span><br></pre></td></tr></table></figure>
+<p><strong>src/utils/helper.rs</strong></p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pub</span> <span class="keyword">fn</span> <span class="title function_">do_something</span>() &#123;</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;directory module&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>src/main.rs</strong></p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">mod</span> utils;  <span class="comment">// 加载 utils 目录模块</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    utils::helper::<span class="title function_ invoke__">do_something</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="路径系统（Path-System）">路径系统（Path System）</h2>
+<p>Rust 中访问模块内的项需要使用路径，分为两种：</p>
+<ul>
+<li><strong>绝对路径</strong>：从 crate 根开始，以 <code>crate::</code> 开头</li>
+</ul>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">crate::utils::helper::<span class="title function_ invoke__">do_something</span>();</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>相对路径</strong>：从当前模块开始，使用 <code>self</code>、<code>super</code> 或直接写</li>
+</ul>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">self::helper::<span class="title function_ invoke__">do_something</span>();   <span class="comment">// 当前模块下的子模块</span></span><br><span class="line">super::utils::<span class="title function_ invoke__">helper</span>();         <span class="comment">// 父级模块</span></span><br></pre></td></tr></table></figure>
+<p><strong>路径访问控制</strong></p>
+<ul>
+<li><code>pub</code>：将模块或项暴露为公开，外部可访问</li>
+<li><code>pub(crate)</code>：仅当前 crate 内可见</li>
+<li><code>pub(super)</code>：仅父模块可见</li>
+<li><code>pub(in path)</code>：仅在指定路径内可见</li>
+</ul>
+<h1>use 关键字</h1>
+<p>当模块路径较长时，可以使用 <code>use</code> 关键字将路径绑定到当前作用域，简化重复调用。</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">mod</span> utils &#123;</span><br><span class="line">    <span class="keyword">pub</span> <span class="keyword">mod</span> helper &#123;</span><br><span class="line">        <span class="keyword">pub</span> <span class="keyword">fn</span> <span class="title function_">do_something</span>() &#123;</span><br><span class="line">            <span class="built_in">println!</span>(<span class="string">&quot;hello&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 简化路径</span></span><br><span class="line"><span class="keyword">use</span> crate::utils::helper::do_something;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="title function_ invoke__">do_something</span>();  <span class="comment">// 直接调用,无需写完整路径</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当不同模块有同名函数时，可以使用 <code>as</code> 重命名避免冲突：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> crate::utils::helper::do_something <span class="keyword">as</span> utils_helper;</span><br><span class="line"><span class="keyword">use</span> crate::other::helper::do_something <span class="keyword">as</span> other_helper;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="title function_ invoke__">utils_helper</span>();</span><br><span class="line">    <span class="title function_ invoke__">other_helper</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>导入多个项</strong></p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 导入多个项</span></span><br><span class="line"><span class="keyword">use</span> std::io::&#123;<span class="keyword">self</span>, Read, Write&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 导入模块下的所有公共项（谨慎使用）</span></span><br><span class="line"><span class="keyword">use</span> std::collections::*;</span><br><span class="line"><span class="comment">// 嵌套导入</span></span><br><span class="line"><span class="keyword">use</span> std::&#123;</span><br><span class="line">    fs::File,</span><br><span class="line">    io::&#123;<span class="keyword">self</span>, Read&#125;,</span><br><span class="line">    path::PathBuf,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h1>可见性</h1>
+<p>Rust 默认<strong>所有项私有</strong>，需显式标记 <code>pub</code> 开放。</p>
+<p><strong>可见性规则表</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">项目</th>
+<th style="text-align:left">默认状态</th>
+<th style="text-align:left">公开方式</th>
+<th style="text-align:left">特殊说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">模块</td>
+<td style="text-align:left">私有</td>
+<td style="text-align:left"><code>pub mod</code></td>
+<td style="text-align:left">模块公开后，内部项仍需各自标记 <code>pub</code></td>
+</tr>
+<tr>
+<td style="text-align:left">结构体/枚举</td>
+<td style="text-align:left">私有</td>
+<td style="text-align:left"><code>pub struct</code> / <code>pub enum</code></td>
+<td style="text-align:left">结构体字段默认仍私有</td>
+</tr>
+<tr>
+<td style="text-align:left">结构体字段</td>
+<td style="text-align:left">私有</td>
+<td style="text-align:left"><code>pub field: Type</code></td>
+<td style="text-align:left">需逐个字段标记</td>
+</tr>
+<tr>
+<td style="text-align:left">Trait</td>
+<td style="text-align:left">私有</td>
+<td style="text-align:left"><code>pub trait</code></td>
+<td style="text-align:left">公开后，实现该 trait 的方法自动公开</td>
+</tr>
+<tr>
+<td style="text-align:left">函数/方法</td>
+<td style="text-align:left">私有</td>
+<td style="text-align:left"><code>pub fn</code></td>
+<td style="text-align:left">Trait 实现的方法除外</td>
+</tr>
+</tbody>
+</table>
+<p><strong>可见性示例</strong></p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// src/lib.rs</span></span><br><span class="line"><span class="keyword">pub</span> <span class="keyword">mod</span> outer &#123;                    <span class="comment">// 模块公开</span></span><br><span class="line">    <span class="keyword">pub</span> <span class="keyword">fn</span> <span class="title function_">public_fn</span>() &#123;&#125;          <span class="comment">// 函数公开:outer::public_fn()</span></span><br><span class="line">    <span class="keyword">fn</span> <span class="title function_">private_fn</span>() &#123;&#125;             <span class="comment">// 私有:仅 outer 内部可用</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">pub</span> <span class="keyword">struct</span> <span class="title class_">User</span> &#123;              <span class="comment">// 结构体公开</span></span><br><span class="line">        <span class="keyword">pub</span> name: <span class="type">String</span>,          <span class="comment">// 字段公开</span></span><br><span class="line">        age: <span class="type">u32</span>,                  <span class="comment">// 字段私有</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">pub</span> <span class="keyword">mod</span> inner &#123;                <span class="comment">// 子模块也需 pub 才能被外部访问</span></span><br><span class="line">        <span class="keyword">pub</span> <span class="keyword">fn</span> <span class="title function_">deep_fn</span>() &#123;&#125;        <span class="comment">// outer::inner::deep_fn()</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>核心原则</strong>：<code>pub</code> 只影响<strong>当前层级</strong>，子模块、字段、嵌套项需要各自的 <code>pub</code>。</p>
+<h1>库lib</h1>
+<p><code>lib.rs</code>是库的入口，用于定义可供其他项目或当前项目内部复用的公共 API。当你需要将代码作为库提供给其他 crate 使用时，就需要<code>lib.rs</code></p>
+<h2 id="本项目使用">本项目使用</h2>
+<p><strong>src/lib.rs</strong></p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 声明模块</span></span><br><span class="line"><span class="keyword">pub</span> <span class="keyword">mod</span> utils &#123;</span><br><span class="line">    <span class="keyword">pub</span> <span class="keyword">fn</span> <span class="title function_">helper</span>() &#123;</span><br><span class="line">        <span class="built_in">println!</span>(<span class="string">&quot;helper from lib&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">pub</span> <span class="keyword">mod</span> config &#123;</span><br><span class="line">    <span class="keyword">pub</span> <span class="keyword">fn</span> <span class="title function_">load</span>() <span class="punctuation">-&gt;</span> <span class="type">String</span> &#123;</span><br><span class="line">        <span class="string">&quot;config loaded&quot;</span>.<span class="title function_ invoke__">to_string</span>()</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 重新导出简化 API</span></span><br><span class="line"><span class="keyword">pub</span> <span class="keyword">use</span> utils::helper;</span><br></pre></td></tr></table></figure>
+<p>在 <code>main.rs</code> 或 <code>bin/</code> 下的其他二进制文件中，可以这样使用：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 使用当前 package 的 lib</span></span><br><span class="line"><span class="keyword">use</span> my_project::utils::helper;</span><br><span class="line"><span class="keyword">use</span> my_project::config;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="title function_ invoke__">helper</span>();              <span class="comment">// 调用 lib 中的函数</span></span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;&#123;&#125;&quot;</span>, config::<span class="title function_ invoke__">load</span>());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>关键点：</strong> 只要在同一个 Package 内，所有二进制文件（<code>main.rs</code> 和 <code>bin/*.rs</code>）都能通过 <code>use 包名::模块::项</code> 的方式访问 <code>lib.rs</code> 中公开的内容</p>
+<h2 id="其他项目引用">其他项目引用</h2>
+<p>只需要在其他项目的依赖中指定本项目路径，就能自动使用本项目 lib 中的内容。</p>
+<p>在 <code>Cargo.toml</code> 中添加依赖：</p>
+<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[dependencies]</span></span><br><span class="line"><span class="attr">my_project</span> = &#123; path = <span class="string">&quot;../my-project&quot;</span> &#125;  <span class="comment"># 本项目路径</span></span><br></pre></td></tr></table></figure>
+<p>然后使用：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> my_project::utils::helper;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="title function_ invoke__">helper</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1>bin</h1>
+<p>当你的 package 需要生成多个可执行文件时，将其他入口文件放在 <code>bin/</code> 目录下。</p>
+<p><strong>src/bin/server.rs：</strong></p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 也可以使用 lib 中的公共代码</span></span><br><span class="line"><span class="keyword">use</span> my_project::config;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;Server starting...&quot;</span>);</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;&#123;&#125;&quot;</span>, config::<span class="title function_ invoke__">load</span>());</span><br><span class="line">    <span class="comment">// 服务器启动逻辑</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>src/bin/cli.rs：</strong></p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> my_project::utils;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;CLI tool running...&quot;</span>);</span><br><span class="line">    utils::<span class="title function_ invoke__">helper</span>();</span><br><span class="line">    <span class="comment">// 命令行工具逻辑</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>编译后生成的可执行文件：</p>
+<ul>
+<li><code>my-project</code>（来自 <a target="_blank" rel="noopener" href="http://main.rs">main.rs</a>）</li>
+<li><code>server</code>（来自 bin/server.rs）</li>
+<li><code>cli</code>（来自 bin/cli.rs）</li>
+</ul>
+<h1>tests/ 目录（集成测试）</h1>
+<p>集成测试用于测试库的公共 API，可以访问 <a target="_blank" rel="noopener" href="http://lib.rs">lib.rs</a> 中的内容。</p>
+<p><strong>tests/integration_test.rs：</strong></p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> my_project::&#123;config, utils&#125;;</span><br><span class="line"></span><br><span class="line"><span class="meta">#[test]</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">test_config_load</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">result</span> = config::<span class="title function_ invoke__">load</span>();</span><br><span class="line">    <span class="built_in">assert_eq!</span>(result, <span class="string">&quot;config loaded&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#[test]</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">test_utils_helper</span>() &#123;</span><br><span class="line">    <span class="comment">// 测试 helper 函数的行为</span></span><br><span class="line">    utils::<span class="title function_ invoke__">helper</span>();  <span class="comment">// 只验证不 panic</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>tests/api_test.rs：</strong></p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> my_project::utils;</span><br><span class="line"></span><br><span class="line"><span class="meta">#[test]</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">test_helper_called</span>() &#123;</span><br><span class="line">    <span class="comment">// 更复杂的测试逻辑</span></span><br><span class="line">    utils::<span class="title function_ invoke__">helper</span>();</span><br><span class="line">    <span class="built_in">assert!</span>(<span class="literal">true</span>);  <span class="comment">// 示例断言</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>运行测试：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cargo <span class="built_in">test</span>                    <span class="comment"># 运行所有测试</span></span><br><span class="line">cargo <span class="built_in">test</span> --<span class="built_in">test</span> integration_test  <span class="comment"># 只运行特定测试</span></span><br></pre></td></tr></table></figure>
+<h1>benches/ 目录（基准测试）</h1>
+<p>基准测试用于性能测试，需要 Rust 的基准测试功能。</p>
+<p><strong>benches/bench.rs：</strong></p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> criterion::&#123;criterion_group, criterion_main, Criterion&#125;;</span><br><span class="line"><span class="keyword">use</span> my_project::utils;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">bench_helper</span>(c: &amp;<span class="keyword">mut</span> Criterion) &#123;</span><br><span class="line">    c.<span class="title function_ invoke__">bench_function</span>(<span class="string">&quot;helper&quot;</span>, |b| &#123;</span><br><span class="line">        b.<span class="title function_ invoke__">iter</span>(|| utils::<span class="title function_ invoke__">helper</span>())</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">criterion_group!(benches, bench_helper);</span><br><span class="line">criterion_main!(benches);</span><br></pre></td></tr></table></figure>
+<p><strong>benches/memory_bench.rs：</strong></p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> criterion::&#123;criterion_group, criterion_main, Criterion&#125;;</span><br><span class="line"><span class="keyword">use</span> my_project::config;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">bench_config_load</span>(c: &amp;<span class="keyword">mut</span> Criterion) &#123;</span><br><span class="line">    c.<span class="title function_ invoke__">bench_function</span>(<span class="string">&quot;config_load&quot;</span>, |b| &#123;</span><br><span class="line">        b.<span class="title function_ invoke__">iter</span>(|| config::<span class="title function_ invoke__">load</span>())</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">criterion_group!(benches, bench_config_load);</span><br><span class="line">criterion_main!(benches);</span><br></pre></td></tr></table></figure>
+<p>运行基准测试：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cargo bench</span><br></pre></td></tr></table></figure>
+<p>需要在 <code>Cargo.toml</code> 中添加：</p>
+<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[dev-dependencies]</span></span><br><span class="line"><span class="attr">criterion</span> = <span class="string">&quot;0.5&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="section">[[bench]]</span></span><br><span class="line"><span class="attr">name</span> = <span class="string">&quot;bench&quot;</span></span><br><span class="line"><span class="attr">harness</span> = <span class="literal">false</span>  <span class="comment"># 禁用默认的 benchmark harness</span></span><br></pre></td></tr></table></figure>
+<h1>examples/ 目录（示例代码）</h1>
+<p>示例代码展示如何使用库，会编译但不会自动运行。</p>
+<p><strong>examples/basic_usage.rs：</strong></p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> my_project::utils;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;Basic usage example:&quot;</span>);</span><br><span class="line">    utils::<span class="title function_ invoke__">helper</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>examples/advanced_usage.rs：</strong></p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> my_project::&#123;config, utils&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;Advanced usage example:&quot;</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">let</span> <span class="variable">config_value</span> = config::<span class="title function_ invoke__">load</span>();</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;Config: &#123;&#125;&quot;</span>, config_value);</span><br><span class="line">    </span><br><span class="line">    utils::<span class="title function_ invoke__">helper</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>运行示例：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cargo run --example basic_usage</span><br><span class="line">cargo run --example advanced_usage</span><br></pre></td></tr></table></figure>
+<h1>Workspace（工作区）</h1>
+<p>当项目包含多个相关的 Package 时，可以使用 Workspace 统一管理。工作区可以将多个 Package 组织在一起，共享依赖和构建产物。</p>
+<h2 id="创建步骤">创建步骤</h2>
+<p>第 1 步：创建目录并进入</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> my-workspace</span><br><span class="line"><span class="built_in">cd</span> my-workspace</span><br></pre></td></tr></table></figure>
+<p>第 2 步：创建 Workspace 配置文件</p>
+<p><strong>手动方式（推荐）</strong>：</p>
+<ol>
+<li>在 <code>my-workspace</code> 文件夹内，右键 → 新建 → 文本文档</li>
+<li>重命名为 <code>Cargo.toml</code>（注意改后缀，不是 <code>.txt</code>）</li>
+<li>用记事本/VS Code 打开，写入：</li>
+</ol>
+<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[workspace]</span></span><br><span class="line"><span class="attr">members</span> = [<span class="string">&quot;app&quot;</span>, <span class="string">&quot;core&quot;</span>, <span class="string">&quot;utils&quot;</span>]</span><br><span class="line"></span><br><span class="line"><span class="section">[workspace.dependencies]</span>  <span class="comment"># 统一声明所有依赖版本,可选</span></span><br><span class="line"><span class="attr">serde</span> = <span class="string">&quot;1.0&quot;</span></span><br><span class="line"><span class="attr">tokio</span> = &#123; version = <span class="string">&quot;1&quot;</span>, features = [<span class="string">&quot;full&quot;</span>] &#125;</span><br></pre></td></tr></table></figure>
+<p>第 3 步：创建子 Package</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cargo new app --bin</span><br><span class="line">cargo new core --lib</span><br><span class="line">cargo new utils --lib</span><br></pre></td></tr></table></figure>
+<hr>
+<p><strong>最终目录结构</strong></p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">my-workspace\</span><br><span class="line">├── Cargo<span class="selector-class">.toml</span>          // 你创建的配置文件</span><br><span class="line">├── app\                // cargo new 生成</span><br><span class="line">│   ├── Cargo<span class="selector-class">.toml</span></span><br><span class="line">│   └── <span class="attribute">src</span>\</span><br><span class="line">│       └── <span class="selector-tag">main</span><span class="selector-class">.rs</span></span><br><span class="line">├── core\               // cargo new 生成</span><br><span class="line">│   ├── Cargo<span class="selector-class">.toml</span></span><br><span class="line">│   └── <span class="attribute">src</span>\</span><br><span class="line">│       └── lib<span class="selector-class">.rs</span></span><br><span class="line">└── utils\             // cargo new 生成</span><br><span class="line">    ├── Cargo<span class="selector-class">.toml</span></span><br><span class="line">    └── <span class="attribute">src</span>\</span><br><span class="line">        └── lib<span class="selector-class">.rs</span></span><br></pre></td></tr></table></figure>
+<h2 id="依赖配置">依赖配置</h2>
+<p><strong>路径依赖</strong>（本地 crate）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># app/Cargo.toml</span><br><span class="line">[dependencies]</span><br><span class="line">core = &#123; path = &quot;../core&quot; &#125;</span><br><span class="line">utils = &#123; path = &quot;../utils&quot; &#125;</span><br></pre></td></tr></table></figure>
+<p><strong>共享依赖</strong>（Workspace 统一版本）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># app/Cargo.toml</span><br><span class="line">[dependencies]</span><br><span class="line">serde = &#123; workspace = true &#125;    # 使用根 Cargo.toml 中定义的版本</span><br><span class="line">tokio = &#123; workspace = true &#125;</span><br></pre></td></tr></table></figure>
+<h2 id="常用命令">常用命令</h2>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cargo build              <span class="comment"># 构建所有成员</span></span><br><span class="line">cargo run -p app         <span class="comment"># 运行指定 Package（-p 是 --package 简写）</span></span><br><span class="line">cargo <span class="built_in">test</span> -p core       <span class="comment"># 测试指定 Package</span></span><br><span class="line">cargo check --workspace  <span class="comment"># 检查所有成员</span></span><br></pre></td></tr></table></figure>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>Author: </span><span class="post-copyright-info"><a href="https://yukizzc.github.io">ZZC</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>Link: </span><span class="post-copyright-info"><a href="https://yukizzc.github.io/2026/04/01/computer/rust%E6%A8%A1%E5%9D%97%E7%B3%BB%E7%BB%9F/">https://yukizzc.github.io/2026/04/01/computer/rust%E6%A8%A1%E5%9D%97%E7%B3%BB%E7%BB%9F/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>Copyright Notice: </span><span class="post-copyright-info">All articles on this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless otherwise stated.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/rust/">rust</a></div><div class="post-share"><div class="social-share" data-image="/images/%E6%9D%A8%E5%A8%81%E5%88%A9.jpg" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/04/02/computer/rust_python%E4%BA%92%E6%93%8D%E4%BD%9C/" title="rust_python互操作"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">Previous</div><div class="info-item-2">rust_python互操作</div></div><div class="info-2"><div class="info-item-1">FFI = Foreign Function Interface（外部函数接口） PyO3 是 Rust 生态中与 Python 交互的首选工具，核心特性：  双向调用：Rust 调用 Python，Python 调用 Rust 类型安全：编译时检查类型转换，避免运行时错误 零拷贝：支持直接内存访问，高性能数据传输 异步支持：与 async/await 无缝集成 GIL 管理：自动处理全局解释器锁，避免死锁  适用场景：  性能敏感模块用 Rust 重写 Python 调用现有 Rust 库 混合语言项目开发 计算密集型任务加速  Rust 编写 Python 动态库 环境配置 创建 lib 项目并配置 Cargo.toml： 12345678910111213141516[package]name = &quot;rust_core&quot;version = &quot;0.1.0&quot;edition = &quot;2021&quot;[lib]name = &quot;rust_core&quot;crate-type = [&quot;cdylib&quot;]...</div></div></div></a><a class="pagination-related" href="/2026/04/01/computer/rust%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/" title="rust安装配置"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">Next</div><div class="info-item-2">rust安装配置</div></div><div class="info-2"><div class="info-item-1">安装 下载与安装 通过 Rust 官网 下载对应系统的安装包。 Windows 用户：  下载 rustup-init.exe 并运行 按提示操作（通常一路下一步即可） 参考：菜鸟教程 - Rust 环境搭建  macOS / Linux 用户： 12345# 使用 curl 安装curl --proto &#x27;=https&#x27; --tlsv1.2 -sSf https://sh.rustup.rs | sh# 安装完成后，重启终端或执行source ~/.cargo/env 验证安装 1234567# 查看 Rust 版本rustc --version# 输出示例:rustc 1.90.0 (1159e78c4 2025-09-14)# 查看 Cargo 版本cargo --version# 输出示例:cargo 1.90.0 (840b83a10 2025-07-30) 更新与卸载 12345678# 更新 Rust 到最新版本rustup update# 卸载 Rustrustup self uninstall# 查看本地 Rust 文档（离线）rustup ...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/03/31/computer/rust%E6%89%80%E6%9C%89%E6%9D%83%E4%B8%8E%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/" title="rust所有权与生命周期"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-03-31</div><div class="info-item-2">rust所有权与生命周期</div></div><div class="info-2"><div class="info-item-1">所有权核心规则  Rust 中的每个值都有一个所有者（owner） 同一时刻只能有一个所有者 当所有者离开作用域，值会被自动释放（调用 drop）  作用域规则 1234&#123;                      // s 还未声明    let s = &quot;hello&quot;;   // s 进入作用域    // 可以使用 s&#125;                      // s 离开作用域,内存被释放 移动 移动是 Rust 所有权的核心规则之一：当一个值被赋值给另一个变量时，该值的所有权会从源变量转移到目标变量，源变量随即失效，无法再被使用。 关键点：  Rust 默认通过移动来转移堆上数据的所有权，避免重复释放 实现了 Copy trait 的简单类型（如整数、布尔值）会自动复制而非移动 移动发生后，原变量被&quot;废弃&quot;，编译器会阻止对其的访问  12345678910// 简单类型(实现 Copy trait)- 自动复制let x = 5;let y = x;           // x 被复制,仍然有效print...</div></div></div></a><a class="pagination-related" href="/2026/03/30/computer/rust%E5%87%BD%E6%95%B0/" title="rust函数"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-03-30</div><div class="info-item-2">rust函数</div></div><div class="info-2"><div class="info-item-1">函数 函数定义 Rust 支持函数指针类型（fn），可以将函数作为参数传递给其他函数。函数指针是一个具体类型，指向编译时已知的函数 123456789101112131415161718192021222324// 基本函数fn greet() &#123;    println!(&quot;Hello, world!&quot;);&#125;// 带参数的函数fn greet_name(name: &amp;str) &#123;    println!(&quot;Hello, &#123;&#125;!&quot;, name);&#125;// 带返回值的函数fn add(x: i32, y: i32) -&gt; i32 &#123;    x + y  // 最后一行是返回值,有分号&#125;// 使用 return 关键字fn add_with_return(x: i32, y: i32) -&gt; i32 &#123;    return x + y;  // 也可以显式返回&#125;// 返回多个值(使用元组)fn swap(x: i32, y: i3...</div></div></div></a><a class="pagination-related" href="/2026/03/31/computer/rust%E9%94%99%E8%AF%AF%E5%A4%84%E7%90%86/" title="rust错误处理"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-03-31</div><div class="info-item-2">rust错误处理</div></div><div class="info-2"><div class="info-item-1">Rust 将错误分为两类：可恢复错误 和 不可恢复错误。    类型 处理方式 说明     可恢复错误 Result&lt;T, E&gt; 可以处理的错误，如文件不存在   不可恢复错误 panic! 程序无法继续执行的错误    不可恢复错误 (panic!) 12345678910111213141516// 直接触发 panicfn main() &#123;    panic!(&quot;程序崩溃了！&quot;);&#125;// 隐式 panic(数组越界)let v = vec![1, 2, 3];let x = v[99];  // panic: index out of bounds// 显式 panicfn divide(a: i32, b: i32) -&gt; i32 &#123;    if b == 0 &#123;        panic!(&quot;除数不能为0&quot;);    &#125;    a / b&#125; Rust 的 panic 策略有两种：unwind（栈展开）和 abort（立即终止）。默认情况下，dev 和 ...</div></div></div></a><a class="pagination-related" href="/2026/04/01/computer/rust%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/" title="rust安装配置"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-04-01</div><div class="info-item-2">rust安装配置</div></div><div class="info-2"><div class="info-item-1">安装 下载与安装 通过 Rust 官网 下载对应系统的安装包。 Windows 用户：  下载 rustup-init.exe 并运行 按提示操作（通常一路下一步即可） 参考：菜鸟教程 - Rust 环境搭建  macOS / Linux 用户： 12345# 使用 curl 安装curl --proto &#x27;=https&#x27; --tlsv1.2 -sSf https://sh.rustup.rs | sh# 安装完成后，重启终端或执行source ~/.cargo/env 验证安装 1234567# 查看 Rust 版本rustc --version# 输出示例:rustc 1.90.0 (1159e78c4 2025-09-14)# 查看 Cargo 版本cargo --version# 输出示例:cargo 1.90.0 (840b83a10 2025-07-30) 更新与卸载 12345678# 更新 Rust 到最新版本rustup update# 卸载 Rustrustup self uninstall# 查看本地 Rust 文档（离线）rustup ...</div></div></div></a><a class="pagination-related" href="/2026/04/02/computer/rust%E5%A4%9A%E7%BA%BF%E7%A8%8B/" title="rust多线程"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-04-02</div><div class="info-item-2">rust多线程</div></div><div class="info-2"><div class="info-item-1">线程的生命周期 理解线程的诞生与消亡 Rust 的线程模型是 1:1 的，即一个 Rust 线程对应一个操作系统线程。理解线程的生命周期，是写好并发程序的第一步。 基础创建 1234567891011121314151617181920use std::thread;use std::time::Duration;// 最简单的方式:spawn 一个闭包let handle = thread::spawn(|| &#123;    // 这里是新线程的执行体    for i in 1..5 &#123;        println!(&quot;子线程: &#123;&#125;&quot;, i);        thread::sleep(Duration::from_millis(500));    &#125;&#125;);// 主线程继续执行for i in 1..3 &#123;    println!(&quot;主线程: &#123;&#125;&quot;, i);    thread::sleep(Duration::from_secs(1));&#12...</div></div></div></a><a class="pagination-related" href="/2026/04/22/computer/rocket/" title="rocket"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-04-22</div><div class="info-item-2">rocket</div></div><div class="info-2"><div class="info-item-1">框架概述 Rocket 是 Rust 生态中最成熟、最易用的 Web 框架之一。它的设计理念是：让编写安全、高效的 Web 应用变得简单愉快。 与传统的 Web 框架不同，Rocket 充分利用了 Rust 的所有权系统和类型系统，能在编译时就发现很多潜在的错误。比如，你永远不会在路由函数中收到错误类型的参数，因为编译器会强制检查。    特性 Rocket的实现 带来的好处     声明式路由 使用属性宏 #[get(&quot;/&quot;)] 路由与处理函数绑定清晰，易于维护   类型安全的参数提取 参数类型自动转换 编译时保证类型正确，避免运行时错误   请求守卫 实现了 FromRequest 的类型 自动验证和提取请求数据，减少样板代码   响应器 实现了 Responder 的类型 灵活控制响应格式和状态码   中间件系统 Fairing（整流罩） 可在请求生命周期多个阶段插入逻辑    Rocket的工作流程  开发者只需要关注「业务逻辑」和「请求守卫」，其余都由 Rocket 自动完成。 快速开始 创建项目 首先创建一个新的 Rust 项目： 12cargo ...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/images/%E6%9D%A8%E5%A8%81%E5%88%A9.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">ZZC</div><div class="author-info-description">计算机和金融方面的学习笔记，也会写一些个人随笔和诗歌</div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">59</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">28</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">5</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://gitee.com/yukizzc"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Contents</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">Package 与 Crate</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="toc-number">1.1.</span> <span class="toc-text">基本概念</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Package-%E7%BB%93%E6%9E%84"><span class="toc-number">1.2.</span> <span class="toc-text">Package 结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Crate-%E7%B1%BB%E5%9E%8B"><span class="toc-number">1.3.</span> <span class="toc-text">Crate 类型</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">2.</span> <span class="toc-text">Module 与 Path</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E8%81%94%E6%A8%A1%E5%9D%97%EF%BC%88Inline-Module%EF%BC%89"><span class="toc-number">2.1.</span> <span class="toc-text">内联模块（Inline Module）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E6%A8%A1%E5%9D%97%EF%BC%88File-Module%EF%BC%89"><span class="toc-number">2.2.</span> <span class="toc-text">文件模块（File Module）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%AE%E5%BD%95%E6%A8%A1%E5%9D%97%EF%BC%88Directory-Module%EF%BC%89"><span class="toc-number">2.3.</span> <span class="toc-text">目录模块（Directory Module）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B7%AF%E5%BE%84%E7%B3%BB%E7%BB%9F%EF%BC%88Path-System%EF%BC%89"><span class="toc-number">2.4.</span> <span class="toc-text">路径系统（Path System）</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">3.</span> <span class="toc-text">use 关键字</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">4.</span> <span class="toc-text">可见性</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">5.</span> <span class="toc-text">库lib</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%AC%E9%A1%B9%E7%9B%AE%E4%BD%BF%E7%94%A8"><span class="toc-number">5.1.</span> <span class="toc-text">本项目使用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B6%E4%BB%96%E9%A1%B9%E7%9B%AE%E5%BC%95%E7%94%A8"><span class="toc-number">5.2.</span> <span class="toc-text">其他项目引用</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">6.</span> <span class="toc-text">bin</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">7.</span> <span class="toc-text">tests&#x2F; 目录（集成测试）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">8.</span> <span class="toc-text">benches&#x2F; 目录（基准测试）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">9.</span> <span class="toc-text">examples&#x2F; 目录（示例代码）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">10.</span> <span class="toc-text">Workspace（工作区）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E6%AD%A5%E9%AA%A4"><span class="toc-number">10.1.</span> <span class="toc-text">创建步骤</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BE%9D%E8%B5%96%E9%85%8D%E7%BD%AE"><span class="toc-number">10.2.</span> <span class="toc-text">依赖配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4"><span class="toc-number">10.3.</span> <span class="toc-text">常用命令</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/12/31/essay/2026/" title="2026">2026</a><time datetime="2026-12-30T16:00:00.000Z" title="Created 2026-12-31 00:00:00">2026-12-31</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/04/22/computer/rocket/" title="rocket">rocket</a><time datetime="2026-04-21T16:00:00.000Z" title="Created 2026-04-22 00:00:00">2026-04-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/04/22/computer/rust%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/" title="rust网络编程">rust网络编程</a><time datetime="2026-04-21T16:00:00.000Z" title="Created 2026-04-22 00:00:00">2026-04-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/04/02/computer/rust_python%E4%BA%92%E6%93%8D%E4%BD%9C/" title="rust_python互操作">rust_python互操作</a><time datetime="2026-04-01T16:00:00.000Z" title="Created 2026-04-02 00:00:00">2026-04-02</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/04/02/computer/rust%E5%A4%9A%E7%BA%BF%E7%A8%8B/" title="rust多线程">rust多线程</a><time datetime="2026-04-01T16:00:00.000Z" title="Created 2026-04-02 00:00:00">2026-04-02</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By ZZC</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Reading Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table of Contents"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(async () => {
+  const showKatex = () => {
+    document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
+  }
+
+  if (!window.katex_js_css) {
+    window.katex_js_css = true
+    await btf.getCSS('https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/katex.min.css')
+    if (false) {
+      await btf.getScript('https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/contrib/copy-tex.min.js')
+    }
+  }
+
+  showKatex()
+})()</script><script>(() => {
+  const parseViewBox = viewBox => {
+    if (!viewBox) return null
+    const parts = viewBox.trim().split(/[\s,]+/).map(n => Number(n))
+    if (parts.length !== 4 || parts.some(n => Number.isNaN(n))) return null
+    return parts
+  }
+
+  const getSvgViewBox = svg => {
+    const attr = parseViewBox(svg.getAttribute('viewBox'))
+    if (attr) return attr
+
+    // Fallback: use bbox to build a viewBox
+    try {
+      const bbox = svg.getBBox()
+      if (bbox && bbox.width && bbox.height) return [bbox.x, bbox.y, bbox.width, bbox.height]
+    } catch (e) {
+      // getBBox may fail on some edge cases; ignore
+    }
+
+    const w = Number(svg.getAttribute('width')) || 0
+    const h = Number(svg.getAttribute('height')) || 0
+    if (w > 0 && h > 0) return [0, 0, w, h]
+    return [0, 0, 100, 100]
+  }
+
+  const setSvgViewBox = (svg, vb) => {
+    svg.setAttribute('viewBox', `${vb[0]} ${vb[1]} ${vb[2]} ${vb[3]}`)
+  }
+
+  const clamp = (v, min, max) => Math.max(min, Math.min(max, v))
+
+  const openSvgInNewTab = ({ source, initViewBox }) => {
+    const getClonedSvg = () => {
+      if (typeof source === 'string') {
+        const template = document.createElement('template')
+        template.innerHTML = source.trim()
+        const svg = template.content.querySelector('svg')
+        return svg ? svg.cloneNode(true) : null
+      }
+      if (source && typeof source.cloneNode === 'function') {
+        return source.cloneNode(true)
+      }
+      return null
+    }
+
+    const clone = getClonedSvg()
+    if (!clone) return
+    if (initViewBox && initViewBox.length === 4) {
+      clone.setAttribute('viewBox', initViewBox.join(' '))
+    }
+    if (!clone.getAttribute('xmlns')) clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+    if (!clone.getAttribute('xmlns:xlink') && clone.outerHTML.includes('xlink:')) {
+      clone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink')
+    }
+    // inject background to match current theme
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
+    const bg = getComputedStyle(document.body).backgroundColor || (isDark ? '#1e1e1e' : '#ffffff')
+    if (!clone.style.background) clone.style.background = bg
+
+    const serializer = new XMLSerializer()
+    const svgSource = serializer.serializeToString(clone)
+    const htmlSource = `<!doctype html><html><head><meta charset="utf-8" />
+      <style>
+        html, body { width: 100%; height: 100%; margin: 0; display: flex; align-items: center; justify-content: center; background: ${bg}; }
+        svg { max-width: 100%; max-height: 100%; height: auto; width: auto; }
+      </style>
+      </head><body>${svgSource}</body></html>`
+    const blob = new Blob([htmlSource], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank', 'noopener')
+    setTimeout(() => URL.revokeObjectURL(url), 30000)
+  }
+
+  const attachMermaidViewerButton = wrap => {
+    let btn = wrap.querySelector('.mermaid-open-btn')
+    if (!btn) {
+      btn = document.createElement('button')
+      btn.type = 'button'
+      btn.className = 'mermaid-open-btn'
+      wrap.appendChild(btn)
+    }
+
+    btn.innerHTML = '<i class="fa fa-search fa-fw" aria-hidden="true"></i>'
+
+    if (!btn.__mermaidViewerBound) {
+      btn.addEventListener('click', e => {
+        e.preventDefault()
+        e.stopPropagation()
+        const svg = wrap.__mermaidOriginalSvg || wrap.querySelector('svg')
+        if (!svg) return
+        const initViewBox = wrap.__mermaidInitViewBox
+        if (typeof svg === 'string') {
+          openSvgInNewTab({ source: svg, initViewBox })
+          return
+        }
+        openSvgInNewTab({ source: svg, initViewBox })
+      })
+      btn.__mermaidViewerBound = true
+    }
+  }
+
+  // Zoom around a point (px, py) in the SVG viewport (in viewBox coordinates)
+  const zoomAtPoint = (vb, factor, px, py) => {
+    const w = vb[2] * factor
+    const h = vb[3] * factor
+    const nx = px - (px - vb[0]) * factor
+    const ny = py - (py - vb[1]) * factor
+    return [nx, ny, w, h]
+  }
+
+  const initMermaidGestures = wrap => {
+    const svg = wrap.querySelector('svg')
+    if (!svg) return
+
+    // Ensure viewBox exists so gestures always work
+    const initVb = getSvgViewBox(svg)
+    wrap.__mermaidInitViewBox = initVb
+    wrap.__mermaidCurViewBox = initVb.slice()
+    setSvgViewBox(svg, initVb)
+
+    // Avoid binding multiple times on themeChange/pjax
+    if (wrap.__mermaidGestureBound) return
+    wrap.__mermaidGestureBound = true
+
+    // Helper: map client (viewport) coordinate -> viewBox coordinate
+    const clientToViewBox = (clientX, clientY) => {
+      const rect = svg.getBoundingClientRect()
+      const vb = wrap.__mermaidCurViewBox || getSvgViewBox(svg)
+      const x = vb[0] + (clientX - rect.left) * (vb[2] / rect.width)
+      const y = vb[1] + (clientY - rect.top) * (vb[3] / rect.height)
+      return { x, y, rect, vb }
+    }
+
+    const state = {
+      pointers: new Map(),
+      startVb: null,
+      startDist: 0,
+      startCenter: null
+    }
+
+    const clampVb = vb => {
+      const init = wrap.__mermaidInitViewBox || vb
+      const minW = init[2] * 0.1
+      const maxW = init[2] * 10
+      const minH = init[3] * 0.1
+      const maxH = init[3] * 10
+      vb[2] = clamp(vb[2], minW, maxW)
+      vb[3] = clamp(vb[3], minH, maxH)
+      return vb
+    }
+
+    const setCurVb = vb => {
+      vb = clampVb(vb)
+      wrap.__mermaidCurViewBox = vb
+      setSvgViewBox(svg, vb)
+    }
+
+    const onPointerDown = e => {
+      // Allow only primary button for mouse
+      if (e.pointerType === 'mouse' && e.button !== 0) return
+      svg.setPointerCapture(e.pointerId)
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+      if (state.pointers.size === 1) {
+        state.startVb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+      } else if (state.pointers.size === 2) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        state.startDist = Math.hypot(dx, dy)
+        state.startVb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+        state.startCenter = { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 }
+      }
+    }
+
+    const onPointerMove = e => {
+      if (!state.pointers.has(e.pointerId)) return
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+      // Pan with 1 pointer
+      if (state.pointers.size === 1 && state.startVb) {
+        const p = [...state.pointers.values()][0]
+        const prev = { x: e.clientX - e.movementX, y: e.clientY - e.movementY }
+        // movementX/Y unreliable on touch, compute from stored last position
+        const last = wrap.__mermaidLastSinglePointer || p
+        const dxClient = p.x - last.x
+        const dyClient = p.y - last.y
+        wrap.__mermaidLastSinglePointer = p
+
+        const { rect } = clientToViewBox(p.x, p.y)
+        const vb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+        const dx = dxClient * (vb[2] / rect.width)
+        const dy = dyClient * (vb[3] / rect.height)
+        setCurVb([vb[0] - dx, vb[1] - dy, vb[2], vb[3]])
+        return
+      }
+
+      // Pinch zoom with 2 pointers
+      if (state.pointers.size === 2 && state.startVb && state.startDist > 0) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        const dist = Math.hypot(dx, dy)
+        if (!dist) return
+        const factor = state.startDist / dist // dist bigger => zoom in (viewBox smaller)
+
+        const cx = (pts[0].x + pts[1].x) / 2
+        const cy = (pts[0].y + pts[1].y) / 2
+        const centerClient = { x: cx, y: cy }
+
+        const pxy = clientToViewBox(centerClient.x, centerClient.y)
+        const cpx = pxy.x
+        const cpy = pxy.y
+
+        const vb = zoomAtPoint(state.startVb, factor, cpx, cpy)
+        setCurVb(vb)
+      }
+    }
+
+    const onPointerUpOrCancel = e => {
+      state.pointers.delete(e.pointerId)
+      if (state.pointers.size === 0) {
+        state.startVb = null
+        state.startDist = 0
+        state.startCenter = null
+        wrap.__mermaidLastSinglePointer = null
+      } else if (state.pointers.size === 1) {
+        // reset single pointer baseline to avoid jump
+        wrap.__mermaidLastSinglePointer = [...state.pointers.values()][0]
+      }
+    }
+
+    // Wheel zoom (mouse/trackpad)
+    const onWheel = e => {
+      // ctrlKey on mac trackpad pinch; we treat both as zoom
+      e.preventDefault()
+      const delta = e.deltaY
+      const zoomFactor = delta > 0 ? 1.1 : 0.9
+      const { x, y } = clientToViewBox(e.clientX, e.clientY)
+      const vb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+      setCurVb(zoomAtPoint(vb, zoomFactor, x, y))
+    }
+
+    const onDblClick = () => {
+      const init = wrap.__mermaidInitViewBox
+      if (!init) return
+      wrap.__mermaidCurViewBox = init.slice()
+      setSvgViewBox(svg, init)
+    }
+
+    svg.addEventListener('pointerdown', onPointerDown)
+    svg.addEventListener('pointermove', onPointerMove)
+    svg.addEventListener('pointerup', onPointerUpOrCancel)
+    svg.addEventListener('pointercancel', onPointerUpOrCancel)
+    svg.addEventListener('wheel', onWheel, { passive: false })
+    svg.addEventListener('dblclick', onDblClick)
+  }
+
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+
+      // Clear old render (themeChange/pjax will rerun)
+      const oldSvg = item.querySelector('svg')
+      if (oldSvg) oldSvg.remove()
+      item.__mermaidGestureBound = false
+
+      const config = mermaidSrc.dataset.config ? JSON.parse(mermaidSrc.dataset.config) : {}
+      if (!config.theme) {
+        config.theme = theme
+      }
+      const mermaidThemeConfig = `%%{init: ${JSON.stringify(config)}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+        if (true) initMermaidGestures(item)
+        item.__mermaidOriginalSvg = svg
+        if (true) attachMermaidViewerButton(item)
+      }
+
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (false) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.12.2/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">Search</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  Loading Database</span></div><div class="local-search-input"><input placeholder="searching..." type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.5.4"></script></div></div></body></html>
